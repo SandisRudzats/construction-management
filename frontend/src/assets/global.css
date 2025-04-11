@@ -1,0 +1,83 @@
+/* frontend/src/assets/global.css */
+
+:root {
+  --primary-bg: #f0f2f5;
+  --card-bg: #ffffff;
+  --primary-text: #333333;
+  --header-bg: #e0e6eb;
+  --header-text: #333333;
+  --accent-green: #4caf50;
+  --accent-red: #f44336;
+  --accent-yellow: #ffeb3b;
+  --border-color: #cccccc;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: var(--primary-bg);
+  color: var(--primary-text);
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+
+/* Rounded corners for all elements */
+* {
+  border-radius: 8px;
+}
+
+/* Hover effect for interactive elements */
+button, input, select, textarea, .btn-primary, .card, .header {
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+button:hover, input:hover, select:hover, textarea:hover,
+.btn-primary:hover, .card:hover, .header:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  transform: scale(1.02);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card {
+  background-color: var(--card-bg);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border-color);
+}
+
+.header {
+  background-color: var(--header-bg);
+  color: var(--header-text);
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.btn-primary {
+  background-color: var(--header-bg);
+  color: var(--header-text);
+  padding: 0.75rem 1.5rem;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background-color: #d0d6db;
+}
+
+.error-message {
+  background-color: rgba(244, 67, 54, 0.1);
+  border: 1px solid var(--accent-red);
+  color: var(--accent-red);
+  padding: 0.5rem; /* Smaller padding */
+  text-align: center;
+  margin-top: 1rem;
+  opacity: 0.6;
+  font-size: 0.9rem; /* Smaller font size */
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+}

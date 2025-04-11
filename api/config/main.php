@@ -2,6 +2,14 @@
 
 use api\controllers\AuthController;
 use api\controllers\v1\AccessPassController;
+use api\interfaces\AccessPassRepositoryInterface;
+use api\interfaces\AccessPassServiceInterface;
+use api\interfaces\ConstructionSiteRepositoryInterface;
+use api\interfaces\ConstructionSiteServiceInterface;
+use api\interfaces\EmployeeRepositoryInterface;
+use api\interfaces\EmployeeServiceInterface;
+use api\interfaces\WorkTaskRepositoryInterface;
+use api\interfaces\WorkTaskServiceInterface;
 use api\modules\ConstructionSite\controllers\v1\ConstructionSiteController;
 use api\modules\ConstructionSite\services\ConstructionSiteService;
 use api\modules\Employee\controllers\v1\EmployeeController;
@@ -14,7 +22,8 @@ use api\repositories\ConstructionSiteRepository;
 use api\repositories\EmployeeRepository;
 use api\repositories\WorkTaskRepository;
 use api\services\AccessPassService;
-use api\services\AuthService;
+use yii\filters\Cors;
+use yii\log\FileTarget;
 use yii\rbac\PhpManager;
 use yii\rest\UrlRule;
 use yii\web\JsonParser;
@@ -27,14 +36,38 @@ $params = array_merge(
     require __DIR__ . '/../../common/config/params.php',
     require __DIR__ . '/../../common/config/params-local.php',
     require __DIR__ . '/params.php',
-    require __DIR__ . '/params-local.php'
+    require __DIR__ . '/params-local.php',
 );
+
+$db = require __DIR__ . '/db.php';
 
 return [
     'id' => 'api',
     'basePath' => dirname(__DIR__),
     'controllerNamespace' => 'api\controllers',
     'bootstrap' => ['log'],
+    'container' => [
+        'singletons' => [
+            // Authentication Services
+            \api\interfaces\AuthServiceInterface::class => \api\services\AuthService::class,
+
+            // Employee Services and Repositories
+            EmployeeServiceInterface::class => EmployeeService::class,
+            EmployeeRepositoryInterface::class => EmployeeRepository::class,
+
+            // Construction Site Services and Repositories
+            ConstructionSiteServiceInterface::class => ConstructionSiteService::class,
+            ConstructionSiteRepositoryInterface::class => ConstructionSiteRepository::class,
+
+            // Work Task Services and Repositories
+            WorkTaskServiceInterface::class => WorkTaskService::class,
+            WorkTaskRepositoryInterface::class => WorkTaskRepository::class,
+
+            // Access Pass Services and Repositories
+            AccessPassServiceInterface::class => AccessPassService::class,
+            AccessPassRepositoryInterface::class => AccessPassRepository::class,
+        ],
+    ],
     'modules' => [
         'employee' => [
             'class' => EmployeeModule::class,
@@ -73,13 +106,16 @@ return [
             'traceLevel' => YII_DEBUG ? 3 : 0,
             'targets' => [
                 [
-                    'class' => \yii\log\FileTarget::class,
+                    'class' => FileTarget::class,
                     'levels' => ['error', 'warning'],
                 ],
             ],
         ],
         'errorHandler' => [
             'errorAction' => 'error/error',
+        ],
+        'authManager' => [
+            'class' => PhpManager::class,
         ],
         'urlManager' => [
             'enablePrettyUrl' => true,
@@ -95,75 +131,44 @@ return [
                 'access-pass/validate' => 'access-pass/validate',
             ],
         ],
-        // ... other components ...
-        'authManager' => [
-            'class' => PhpManager::class,
-        ],
-        'authService' => [
-            'class' => AuthService::class,
-            '__construct()' => [Yii::$app->get('employeeService')],
-        ],
-        'employeeService' => [
-            'class' => EmployeeService::class,
-            '__construct()' => [Yii::$app->get('employeeRepository')],
-        ],
-        'employeeRepository' => [
-            'class' => EmployeeRepository::class,
-        ],
-        'constructionSiteService' => [
-            'class' => ConstructionSiteService::class,
-            '__construct()' => [Yii::$app->get('constructionSiteRepository')],
-        ],
-        'constructionSiteRepository' => [
-            'class' => ConstructionSiteRepository::class,
-        ],
-        'workTaskService' => [
-            'class' => WorkTaskService::class,
-            '__construct()' => [Yii::$app->get('workTaskRepository')],
-        ],
-        'workTaskRepository' => [
-            'class' => WorkTaskRepository::class,
-        ],
-        'accessPassService' => [
-            'class' => AccessPassService::class,
-            '__construct()' => [Yii::$app->get('accessPassRepository')],
-        ],
-        'accessPassRepository' => [ // ADDED THIS
-            'class' => AccessPassRepository::class,
-        ],
-        'authorizationService' => [ // ADDED THIS
-            'class' => AuthService::class,
-            '__construct()' => [
-                Yii::$app->get('authManager'),
-                Yii::$app->get('accessPassService'),
-                Yii::$app->get('employeeService'),
+        'db' => $db, // Ensure this line is present
+        'corsFilter' => [
+            'class' => Cors::class,
+            'cors' => [
+                // todo : change to locahost before final version
+//                'Origin' => ['http://localhost:5174'],
+                'Origin' => ['*'],
+                'Access-Control-Request-Method' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'],
+                'Access-Control-Request-Headers' => ['*'],
+                'Access-Control-Allow-Credentials' => true,
+                'Access-Control-Max-Age' => 3600,
+                'Access-Control-Expose-Headers' => [
+                    'X-Pagination-Current-Page',
+                    'X-Pagination-Page-Count',
+                    'X-Pagination-Per-Page',
+                    'X-Pagination-Total-Count'
+                ],
             ],
         ],
     ],
     'controllerMap' => [
         'auth' => [
             'class' => AuthController::class,
-            'as corsFilter' => Yii::$app->get('corsFilter'),
         ],
         'access-pass' => [
             'class' => AccessPassController::class,
-            'as corsFilter' => Yii::$app->get('corsFilter'),
         ],
         'v1/employee' => [
             'class' => EmployeeController::class,
-            'as corsFilter' => Yii::$app->get('corsFilter'),
         ],
         'v1/construction-site' => [
             'class' => ConstructionSiteController::class,
-            'as corsFilter' => Yii::$app->get('corsFilter'),
         ],
         'v1/work-task' => [
             'class' => WorkTaskController::class,
-            'as corsFilter' => Yii::$app->get('corsFilter'),
         ],
         'v1/access-pass' => [
             'class' => AccessPassController::class,
-            'as corsFilter' => Yii::$app->get('corsFilter'),
         ],
     ],
 ];
