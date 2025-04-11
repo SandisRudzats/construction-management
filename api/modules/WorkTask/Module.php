@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace app\modules\WorkTask;
+namespace api\modules\WorkTask;
 
 use yii\base\Module as BaseModule;
 
