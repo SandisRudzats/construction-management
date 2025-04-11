@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace api\controllers\v1;
 
+use api\interfaces\AccessPassServiceInterface;
 use api\interfaces\AuthServiceInterface;
 use Yii;
 use yii\rest\Controller;
@@ -12,7 +13,7 @@ use yii\filters\auth\HttpBearerAuth;
 
 class AccessPassController extends Controller
 {
-    public function __construct($id, $module, private AuthServiceInterface $authorizationService, $config = [])
+    public function __construct($id, $module, private AccessPassServiceInterface $accessPassService, $config = [])
     {
         parent::__construct($id, $module, $config);
     }

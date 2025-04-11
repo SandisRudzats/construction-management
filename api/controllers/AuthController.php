@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace api\controllers;
 
+use api\interfaces\EmployeeServiceInterface;
 use api\models\LoginForm;
 use api\interfaces\AuthServiceInterface;
+use api\services\AuthService;
 use Yii;
 use yii\rest\Controller;
 use yii\web\Response;
@@ -13,8 +15,13 @@ use yii\web\Response;
 class AuthController extends Controller
 {
 
-    public function __construct($id, $module, private AuthServiceInterface $authService, $config = [])
-    {
+    public function __construct(
+        $id,
+        $module,
+        private AuthServiceInterface $authService,
+        private EmployeeServiceInterface $employeeService,
+        $config = []
+    ) {
         parent::__construct($id, $module, $config);
     }
 

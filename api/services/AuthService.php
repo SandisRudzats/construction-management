@@ -11,11 +11,9 @@ use Yii;
 
 class AuthService implements AuthServiceInterface
 {
-    private EmployeeService $employeeService;
 
-    public function __construct(EmployeeService $employeeService)
+    public function __construct(private EmployeeService $employeeService)
     {
-        $this->employeeService = $employeeService;
     }
 
     /**
@@ -24,10 +22,12 @@ class AuthService implements AuthServiceInterface
     public function login(LoginForm $model): bool
     {
         $employee = $this->employeeService->findEmployeeByUsername($model->username);
+
         if ($employee && Yii::$app->security->validatePassword($model->password, $employee->password_hash)) {
             Yii::$app->user->login($employee, $model->rememberMe ? 3600 * 24 * 30 : 0);
             $auth = Yii::$app->authManager;
             $role = $auth->getRole($employee->role);
+
             if ($role) {
                 $auth->assign($role, $employee->id);
             }
