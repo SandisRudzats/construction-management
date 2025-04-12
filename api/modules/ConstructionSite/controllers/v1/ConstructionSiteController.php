@@ -5,16 +5,10 @@ declare(strict_types=1);
 namespace api\modules\ConstructionSite\controllers\v1;
 
 use api\interfaces\ConstructionSiteServiceInterface;
-use yii\rest\Controller;
+use api\modules\ConstructionSite\models\ConstructionSite;
+use yii\rest\ActiveController;
 
-class ConstructionSiteController extends Controller
+class ConstructionSiteController extends ActiveController
 {
-    public function __construct(
-        $id,
-        $module,
-        private ConstructionSiteServiceInterface $constructionSiteService,
-        $config = []
-    ) {
-        parent::__construct($id, $module, $config);
-    }
+    public $modelClass = ConstructionSite::class;
 }

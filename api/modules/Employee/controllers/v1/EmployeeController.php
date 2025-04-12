@@ -3,64 +3,54 @@
 namespace api\modules\Employee\controllers\v1;
 
 use api\interfaces\EmployeeServiceInterface;
-use yii\rest\Controller;
+use api\modules\Employee\models\Employee;
+use Yii;
+use yii\rest\ActiveController;
 use yii\web\NotFoundHttpException;
 
-class EmployeeController extends Controller
+class EmployeeController extends ActiveController
 {
+    public $modelClass = Employee::class;
+
     public function __construct(
         $id,
         $module,
         private EmployeeServiceInterface $employeeService,
         $config = []
     ) {
+
         parent::__construct($id, $module, $config);
     }
 
-    public function behaviors()
+    public function actionSandis()
     {
-        $behaviors = parent::behaviors();
-        $behaviors['corsFilter'] = [
-            'class' => \yii\filters\Cors::class,
-        ];
-        return $behaviors;
+        dd('sandis here');
     }
 
-    public function actionIndex()
+    /**
+     * @throws NotFoundHttpException
+     */
+    public function actionFindByUsername($username)
     {
-        return $this->employeeService->getAllEmployees();
-    }
-
-    public function actionView($id)
-    {
-        $employee = $this->employeeService->getEmployeeById($id);
+        $employee = $this->employeeService->findEmployeeByUsername($username);
         if ($employee === null) {
             throw new NotFoundHttpException('Employee not found.');
         }
         return $employee;
     }
 
-    public function actionCreate()
+    /**
+     * @throws NotFoundHttpException
+     */
+    public function findModel($id): Employee
     {
-        $employeeData = \Yii::$app->request->post();
-        return $this->employeeService->createEmployee($employeeData);
-    }
-
-    public function actionUpdate($id)
-    {
-        $employeeData = \Yii::$app->request->post();
-        $employee = $this->employeeService->updateEmployee($id, $employeeData);
-        if ($employee === null) {
+        Yii::info("findModel called with id: $id", 'debug'); // Add this line
+        $model = Employee::findOne($id);
+        if ($model === null) {
+            Yii::info("Employee not found with id: $id", 'debug'); // Add this line
             throw new NotFoundHttpException('Employee not found.');
         }
-        return $employee;
-    }
-
-    public function actionDelete($id)
-    {
-        if (!$this->employeeService->deleteEmployee($id)) {
-            throw new NotFoundHttpException('Employee not found.');
-        }
-        \Yii::$app->response->statusCode = 204; // No Content
+        Yii::info("Employee found with id: $id", 'debug'); // Add this line
+        return $model;
     }
 }

@@ -45,3 +45,5 @@ phpunit.phar
 
 /.env
 .env
+
+.qodo

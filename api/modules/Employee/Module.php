@@ -8,7 +8,7 @@ use yii\base\Module as BaseModule;
 
 class Module extends BaseModule
 {
-    public $controllerNamespace = 'app\modules\Employee\controllers';
+    public $controllerNamespace = 'api\modules\Employee\controllers\v1';
 
     public function init()
     {

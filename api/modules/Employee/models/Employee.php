@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace api\modules\employee\models;
+namespace api\modules\Employee\models;
 
 use api\modules\WorkTask\models\WorkTask;
 use Yii;

@@ -7,7 +7,6 @@ namespace api\controllers;
 use api\interfaces\EmployeeServiceInterface;
 use api\models\LoginForm;
 use api\interfaces\AuthServiceInterface;
-use api\services\AuthService;
 use Yii;
 use yii\rest\Controller;
 use yii\web\Response;

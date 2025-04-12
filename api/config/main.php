@@ -107,7 +107,8 @@ return [
             'targets' => [
                 [
                     'class' => FileTarget::class,
-                    'levels' => ['error', 'warning'],
+                    'levels' => ['trace', 'error', 'warning'],
+                    'categories' => ['yii\web\UrlManager::parseRequest'], // Log URL manager routing
                 ],
             ],
         ],
@@ -122,13 +123,27 @@ return [
             'enableStrictParsing' => true,
             'showScriptName' => false,
             'rules' => [
-                ['class' => UrlRule::class, 'controller' => 'v1/employee'],
-                ['class' => UrlRule::class, 'controller' => 'v1/construction-site'],
-                ['class' => UrlRule::class, 'controller' => 'v1/work-task'],
-                ['class' => UrlRule::class, 'controller' => 'v1/access-pass'],
-                'auth/login' => 'auth/login',
-                'auth/logout' => 'auth/logout',
-                'access-pass/validate' => 'access-pass/validate',
+                // Define the route for v1/employee, making sure it maps correctly to the v1 namespace
+                [
+                    'class' => 'yii\rest\UrlRule',
+                    'controller' => 'v1/employee', // Use the v1 namespace for the employee controller
+                    'pluralize' => false, // Disabling pluralization
+                ],
+                [
+                    'class' => 'yii\rest\UrlRule',
+                    'controller' => [
+                        'employee/employee',
+                        'v1/employee',
+                        'work-task/work-task',
+                        'access-pass/access-pass',
+                    ],
+                    'pluralize' => false,
+                ],
+//                'auth/login' => 'auth/login',
+//                'auth/logout' => 'auth/logout',
+//                'employee/hello' => 'employee/hello',
+//                'access-pass/validate' => 'access-pass/validate',
+//                'employee/employee', // maps to modules/Employee/controllers/v1/EmployeeController
             ],
         ],
         'db' => $db, // Ensure this line is present
@@ -158,17 +173,17 @@ return [
         'access-pass' => [
             'class' => AccessPassController::class,
         ],
-        'v1/employee' => [
-            'class' => EmployeeController::class,
-        ],
-        'v1/construction-site' => [
-            'class' => ConstructionSiteController::class,
-        ],
-        'v1/work-task' => [
-            'class' => WorkTaskController::class,
-        ],
-        'v1/access-pass' => [
-            'class' => AccessPassController::class,
-        ],
+//        'v1/employee' => [
+//            'class' => EmployeeController::class,
+//        ],
+//        'v1/construction-site' => [
+//            'class' => ConstructionSiteController::class,
+//        ],
+//        'v1/work-task' => [
+//            'class' => WorkTaskController::class,
+//        ],
+//        'v1/access-pass' => [
+//            'class' => AccessPassController::class,
+//        ],
     ],
 ];
