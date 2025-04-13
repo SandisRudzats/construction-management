@@ -157,7 +157,7 @@
       <div class="main-content">
         <div v-if="selectedSection === 'dashboard'">
           <h1>Welcome to the dashboard!</h1>
-          <p>This is the main dashboard area. You can add general information and widgets here.</p>
+          <p>This is the construction management system for employees and managers.</p>
         </div>
         <div v-else-if="selectedSection === 'employees'">
           <ViewEmployees />
