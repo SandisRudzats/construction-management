@@ -279,20 +279,12 @@ export default defineComponent({
         userStore.clearUser()
         await router.push('/login')
       } catch (err: any) {
-        console.error('Logout failed', err)
+        await router.push('/dashboard')
       }
     }
 
     const handleSectionSelect = (sectionName: string) => {
       selectedSection.value = sectionName
-      console.log(
-        'Selected section:',
-        sectionName,
-        'Current selectedSection:',
-        selectedSection.value,
-      )
-      // Emit the event to notify the parent component (if needed)
-      // emit('section-selected', sectionName);
     }
 
     const toggleEmployeesSection = () => {
@@ -320,10 +312,6 @@ export default defineComponent({
 
     const hasPermission = (permission: Permission): boolean => {
       const user = computed(() => userStore.user).value // Access user reactively
-
-      // console.log(user.permissions);
-
-      // console.log('Checking permission:', permission, 'for user:', user.permissions)
       if (!user || !user.role) return false // Ensure user and role are defined
 
       // Role-based permissions
@@ -342,7 +330,6 @@ export default defineComponent({
       }
 
       if (rolePermissions[user.role] && rolePermissions[user.role].includes(permission)) {
-        console.log('returns true for', permission)
         return true
       }
 
@@ -359,15 +346,11 @@ export default defineComponent({
         viewAssignedSites: user.role === 'employee',
       }
 
-      // console.log('Permission check for:', permission, 'Result:', hasPermission(permission));
-
-      console.log(specialPermissions[permission] || false)
       return specialPermissions[permission] || false
     }
 
     onMounted(() => {
       userStore.initializeUser()
-      console.log('User initialized:', userStore.user)
     })
 
     return {
