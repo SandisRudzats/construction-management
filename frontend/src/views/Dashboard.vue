@@ -39,13 +39,6 @@
             Edit Employees
           </div>
           <div
-            v-if="hasPermission('manageEmployees')"
-            @click.stop="handleSectionSelect('deactivate-employee')"
-            class="sidebar-option sub-option"
-          >
-            Deactivate Employees
-          </div>
-          <div
             v-if="hasPermission('viewOwnProfile')"
             @click.stop="handleSectionSelect('view-employee-profile')"
             class="sidebar-option sub-option"
@@ -168,9 +161,6 @@
         <div v-else-if="selectedSection === 'edit-employee'">
           <EditEmployee />
         </div>
-        <div v-else-if="selectedSection === 'deactivate-employee'">
-          <DeactivateEmployee />
-        </div>
         <div v-else-if="selectedSection === 'view-employee-profile'">
           <EmployeeProfile />
         </div>
@@ -228,7 +218,6 @@ import { useUserStore } from '@/stores/user'
 import ViewEmployees from '@/components/employee/ViewEmployees.vue'
 import CreateEmployee from '@/components/employee/CreateEmployee.vue'
 import EditEmployee from '@/components/employee/EditEmployee.vue'
-import DeactivateEmployee from '@/components/employee/DeactivateEmployee.vue'
 import EmployeeProfile from '@/components/employee/EmployeeProfile.vue'
 import ManagerSubordinates from '@/components/employee/ManagerSubordinates.vue'
 import ViewConstructionSites from '@/components/construction-site/ViewConstructionSites.vue'
@@ -249,7 +238,6 @@ export default defineComponent({
     ViewEmployees,
     CreateEmployee,
     EditEmployee,
-    DeactivateEmployee,
     EmployeeProfile,
     ManagerSubordinates,
     ViewConstructionSites,
@@ -321,7 +309,6 @@ export default defineComponent({
           'manageEmployees',
           'manageSites',
           'manageAllTasks',
-          'viewTeam',
           'manageOwnSites',
           'viewOwnTasks',
         ],
@@ -333,20 +320,20 @@ export default defineComponent({
         return true
       }
 
-      // Special permissions
-      const specialPermissions: Record<Permission, boolean> = {
-        manageEmployees: user.role === 'admin',
-        manageSites: user.role === 'admin',
-        manageAllTasks: user.role === 'admin',
-        manageOwnTasks: user.role === 'manager',
-        viewTeam: user.role === 'admin' || user.role === 'manager',
-        manageOwnSites: user.role === 'admin' || user.role === 'manager',
-        viewOwnTasks: true, // All users can view their own tasks
-        viewOwnProfile: true, //all users can view their own profile.
-        viewAssignedSites: user.role === 'employee',
-      }
-
-      return specialPermissions[permission] || false
+      // // Special permissions
+      // const specialPermissions: Record<Permission, boolean> = {
+      //   manageEmployees: user.role === 'admin',
+      //   manageSites: user.role === 'admin',
+      //   manageAllTasks: user.role === 'admin',
+      //   manageOwnTasks: user.role === 'manager',
+      //   viewTeam: user.role === 'manager',
+      //   manageOwnSites: user.role === 'admin' || user.role === 'manager',
+      //   viewOwnTasks: true, // All users can view their own tasks
+      //   viewOwnProfile: true, //all users can view their own profile.
+      //   viewAssignedSites: user.role === 'employee',
+      // }
+      //
+      // return specialPermissions[permission] || false
     }
 
     onMounted(() => {

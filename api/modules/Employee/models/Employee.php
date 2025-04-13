@@ -21,6 +21,7 @@ use yii\web\IdentityInterface;
  * @property string|null $password_hash
  * @property int $access_level
  * @property string $role
+ * @property bool $active
  * @property string|null $created_at
  * @property string|null $updated_at
  *
@@ -46,6 +47,7 @@ class Employee extends ActiveRecord implements IdentityInterface
             [['first_name', 'last_name', 'username', 'password_hash'], 'string', 'max' => 255],
             [['birth_date'], 'date', 'format' => 'Y-m-d'], // Corrected date format
             [['username'], 'unique'],
+            [['active'], 'boolean'],
             [['role'], 'in', 'range' => ['admin', 'manager', 'employee']],
             [['access_level'], 'integer', 'min' => 1, 'max' => 5],
         ];
@@ -62,6 +64,7 @@ class Employee extends ActiveRecord implements IdentityInterface
             'password_hash' => 'Password Hash',
             'access_level' => 'Access Level',
             'role' => 'Role',
+            'active' => 'Active',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
         ];

@@ -13,7 +13,6 @@ import ViewConstructionSites from '@/components/construction-site/ViewConstructi
 
 // Employee Components
 import CreateEmployee from '@/components/employee/CreateEmployee.vue';
-import DeactivateEmployee from '@/components/employee/DeactivateEmployee.vue';
 import EditEmployee from '@/components/employee/EditEmployee.vue';
 import EmployeeProfile from '@/components/employee/EmployeeProfile.vue';
 import ManagerSubordinates from '@/components/employee/ManagerSubordinates.vue';
@@ -53,12 +52,6 @@ const routes: RouteRecordRaw[] = [
     path: '/employees/create',
     name: 'CreateEmployee',
     component: CreateEmployee,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/employees/deactivate/:id',
-    name: 'DeactivateEmployee',
-    component: DeactivateEmployee,
     meta: { requiresAuth: true },
   },
   {

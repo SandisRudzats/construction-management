@@ -138,11 +138,25 @@ return [
                 'v1/employee/' => 'employee/employee/',
                 'v1/access-pass' => 'access-pass/access-pass/',
                 'v1/work-task' => 'work-task/work-task/',
+//                'PUT v1/employee/{id}' => 'v1/employee/update/{id}',
+                'PUT v1/employee/<id:\d+>' => 'employee/employee/update',
+                'GET v1/employee/me' => 'employee/employee/view-self',
+
                 [
                     'pattern' => 'employee/profile',
                     'route' => 'employee/employee/view-self',
                     'verb' => 'GET',
                 ],
+                [
+                    'class' => 'yii\rest\UrlRule',
+                    'controller' => ['employee/employee'],
+                    'pluralize' => false, // optional: if your controller is not plural
+                ],
+//                [
+//                    'pattern' => 'v1/employee/{id}',
+//                    'route' => 'employee/employee/update', // Corrected route
+//                    'verb' => 'PUT',
+//                ],
             ],
         ],
         'cors' => [

@@ -126,17 +126,12 @@ class EmployeeController extends ActiveController
     {
         $employee = $this->findModel($id);
 
-        if (!Yii::$app->user->can('updateEmployee', ['employee' => $employee])) {
+        if (!Yii::$app->user->can('manageEmployees', ['employee' => $employee])) {
             throw new ForbiddenHttpException("You don't have permission to update this employee.");
         }
 
         $data = Yii::$app->request->post();
         $employee->load($data, ''); // Load all post data
-
-        // Handle password updates.
-        if (isset($data['password'])) {
-            $employee->setPassword($data['password']);
-        }
 
         if (!$employee->validate()) {
             Yii::$app->response->statusCode = 422;  //  Unprocessable Entity

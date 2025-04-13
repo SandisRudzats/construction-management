@@ -20,6 +20,7 @@ class m250410_164733_create_employees_table extends Migration
                 'password_hash' => $this->string(255)->null()->defaultValue(null),
                 'access_level' => $this->integer()->defaultValue(1),
                 'role' => $this->string(20)->notNull(),
+                'active' => $this->boolean()->defaultValue(1),
                 'manager_id' => $this->integer()->null()->defaultValue(null),
                 'created_at' => $this->timestamp()->defaultExpression('CURRENT_TIMESTAMP'),
                 'updated_at' => $this->timestamp()->defaultExpression('CURRENT_TIMESTAMP'),
