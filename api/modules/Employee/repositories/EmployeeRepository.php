@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace api\repositories;
+namespace api\modules\Employee\repositories;
 
-use api\interfaces\EmployeeRepositoryInterface;
-use api\modules\employee\models\Employee;
+use api\modules\Employee\interfaces\EmployeeRepositoryInterface;
+use api\modules\Employee\models\Employee;
 use yii\db\Exception;
 use yii\db\StaleObjectException;
 

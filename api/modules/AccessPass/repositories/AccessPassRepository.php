@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace api\repositories;
+namespace api\modules\AccessPass\repositories;
 
-use api\interfaces\AccessPassRepositoryInterface;
 use api\models\AccessPass;
+use api\modules\AccessPass\interfaces\AccessPassRepositoryInterface;
 use Throwable;
 use yii\db\Exception;
 use yii\db\StaleObjectException;

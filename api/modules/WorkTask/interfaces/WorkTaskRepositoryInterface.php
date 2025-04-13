@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace api\interfaces;
+namespace api\modules\WorkTask\interfaces;
 
 use api\modules\workTask\models\WorkTask;
 

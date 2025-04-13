@@ -1,35 +1,33 @@
 <?php
 
 use api\controllers\AuthController;
-use api\controllers\v1\AccessPassController;
-use api\interfaces\AccessPassRepositoryInterface;
-use api\interfaces\AccessPassServiceInterface;
-use api\interfaces\ConstructionSiteRepositoryInterface;
-use api\interfaces\ConstructionSiteServiceInterface;
-use api\interfaces\EmployeeRepositoryInterface;
-use api\interfaces\EmployeeServiceInterface;
-use api\interfaces\WorkTaskRepositoryInterface;
-use api\interfaces\WorkTaskServiceInterface;
-use api\modules\ConstructionSite\controllers\v1\ConstructionSiteController;
+use api\modules\AccessPass\controllers\v1\AccessPassController;
+use api\modules\AccessPass\interfaces\AccessPassRepositoryInterface;
+use api\modules\AccessPass\interfaces\AccessPassServiceInterface;
+use api\modules\AccessPass\Module as AccessPassModule;
+use api\modules\AccessPass\repositories\AccessPassRepository;
+use api\modules\ConstructionSite\interfaces\ConstructionSiteRepositoryInterface;
+use api\modules\ConstructionSite\interfaces\ConstructionSiteServiceInterface;
+use api\modules\ConstructionSite\Module as ConstructionSiteModule;
+use api\modules\ConstructionSite\repositories\ConstructionSiteRepository;
 use api\modules\ConstructionSite\services\ConstructionSiteService;
-use api\modules\Employee\controllers\v1\EmployeeController;
-use api\modules\employee\models\Employee;
+use api\modules\Employee\interfaces\EmployeeRepositoryInterface;
+use api\modules\Employee\interfaces\EmployeeServiceInterface;
+use api\modules\Employee\models\Employee;
+use api\modules\Employee\Module as EmployeeModule;
+use api\modules\Employee\repositories\EmployeeRepository;
 use api\modules\Employee\services\EmployeeService;
-use api\modules\WorkTask\controllers\v1\WorkTaskController;
+use api\modules\WorkTask\interfaces\WorkTaskRepositoryInterface;
+use api\modules\WorkTask\interfaces\WorkTaskServiceInterface;
+use api\modules\WorkTask\Module as WorkTaskModule;
+use api\modules\WorkTask\repositories\WorkTaskRepository;
 use api\modules\WorkTask\services\WorkTaskService;
-use api\repositories\AccessPassRepository;
-use api\repositories\ConstructionSiteRepository;
-use api\repositories\EmployeeRepository;
-use api\repositories\WorkTaskRepository;
 use api\services\AccessPassService;
+use console\commands\RbacController;
 use yii\filters\Cors;
 use yii\log\FileTarget;
 use yii\rbac\PhpManager;
-use yii\rest\UrlRule;
 use yii\web\JsonParser;
-use \api\modules\WorkTask\Module as WorkTaskModule;
-use \api\modules\ConstructionSite\Module as ConstructionSiteModule;
-use \api\modules\Employee\Module as EmployeeModule;
 use yii\web\Response;
 
 $params = array_merge(
@@ -78,6 +76,9 @@ return [
         'work-task' => [
             'class' => WorkTaskModule::class,
         ],
+        'access-pass' => [
+            'class' => AccessPassModule::class,
+        ],
     ],
     'components' => [
         'request' => [
@@ -115,54 +116,40 @@ return [
         'errorHandler' => [
             'errorAction' => 'error/error',
         ],
+        // todo: setapot kkādu tokenu frontendā - ar ko sūtīs rekvestus
+        // todo:: vajadzes iznemt
         'authManager' => [
             'class' => PhpManager::class,
+            'defaultRoles' => ['employee', 'manager', 'admin'],
+            'itemFile' => '@common/rbac/items.php',
+            'assignmentFile' => '@common/rbac/assignments.php',
+            'ruleFile' => '@common/rbac/rules.php',
         ],
+        // todo:: cleanappo routes ko nevajadzēs
         'urlManager' => [
             'enablePrettyUrl' => true,
             'enableStrictParsing' => true,
             'showScriptName' => false,
             'rules' => [
-                // Define the route for v1/employee, making sure it maps correctly to the v1 namespace
-                [
-                    'class' => 'yii\rest\UrlRule',
-                    'controller' => 'v1/employee', // Use the v1 namespace for the employee controller
-                    'pluralize' => false, // Disabling pluralization
-                ],
-                [
-                    'class' => 'yii\rest\UrlRule',
-                    'controller' => [
-                        'employee/employee',
-                        'v1/employee',
-                        'work-task/work-task',
-                        'access-pass/access-pass',
-                    ],
-                    'pluralize' => false,
-                ],
-//                'auth/login' => 'auth/login',
-//                'auth/logout' => 'auth/logout',
-//                'employee/hello' => 'employee/hello',
-//                'access-pass/validate' => 'access-pass/validate',
-//                'employee/employee', // maps to modules/Employee/controllers/v1/EmployeeController
+                'auth/login' => 'auth/login',
+                'auth/logout' => 'auth/logout',
+                'v1/construction-site' => 'construction-site/construction-site/',
+                // todo :: atstāju sev piemēram priekš custom stuff
+                'v1/construction-site/sandis' => 'construction-site/construction-site/sandis',
+                'v1/employee/create' => 'employee/employee/create',
+                'v1/employee/' => 'employee/employee/',
+//                'POST v1/employee' => 'employee/employee/create',
+                'v1/access-pass' => 'access-pass/access-pass/',
+                'v1/work-task' => 'work-task/work-task/',
             ],
         ],
-        'db' => $db, // Ensure this line is present
-        'corsFilter' => [
+        'cors' => [
             'class' => Cors::class,
             'cors' => [
-                // todo : change to locahost before final version
-//                'Origin' => ['http://localhost:5174'],
                 'Origin' => ['*'],
-                'Access-Control-Request-Method' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'],
-                'Access-Control-Request-Headers' => ['*'],
-                'Access-Control-Allow-Credentials' => true,
-                'Access-Control-Max-Age' => 3600,
-                'Access-Control-Expose-Headers' => [
-                    'X-Pagination-Current-Page',
-                    'X-Pagination-Page-Count',
-                    'X-Pagination-Per-Page',
-                    'X-Pagination-Total-Count'
-                ],
+                'Access-Control-Request-Method' => ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+                'Access-Control-Allow-Headers' => ['X-Requested-With', 'Content-Type', 'Authorization'],
+                'Access-Control-Allow-Origin' => ['*'],
             ],
         ],
     ],
@@ -173,17 +160,18 @@ return [
         'access-pass' => [
             'class' => AccessPassController::class,
         ],
-//        'v1/employee' => [
-//            'class' => EmployeeController::class,
-//        ],
-//        'v1/construction-site' => [
-//            'class' => ConstructionSiteController::class,
-//        ],
-//        'v1/work-task' => [
-//            'class' => WorkTaskController::class,
-//        ],
-//        'v1/access-pass' => [
-//            'class' => AccessPassController::class,
-//        ],
+        // Registering controllers for version 1 of the modules
+        'v1/employee' => [
+            'class' => \api\modules\Employee\controllers\v1\EmployeeController::class,
+        ],
+        'v1/construction-site' => [
+            'class' => \api\modules\ConstructionSite\controllers\v1\ConstructionSiteController::class,
+        ],
+        'v1/work-task' => [
+            'class' => \api\modules\WorkTask\controllers\v1\WorkTaskController::class,
+        ],
+        'v1/access-pass' => [
+            'class' => \api\modules\AccessPass\controllers\v1\AccessPassController::class,
+        ],
     ],
 ];

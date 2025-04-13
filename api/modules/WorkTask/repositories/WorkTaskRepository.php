@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace api\repositories;
+namespace api\modules\WorkTask\repositories;
 
-use api\interfaces\WorkTaskRepositoryInterface;
+use api\modules\WorkTask\interfaces\WorkTaskRepositoryInterface;
 use api\modules\workTask\models\WorkTask;
 
 class WorkTaskRepository implements WorkTaskRepositoryInterface

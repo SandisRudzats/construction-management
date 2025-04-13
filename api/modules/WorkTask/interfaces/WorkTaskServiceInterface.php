@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace api\interfaces;
+namespace api\modules\WorkTask\interfaces;
 
 interface WorkTaskServiceInterface
 {

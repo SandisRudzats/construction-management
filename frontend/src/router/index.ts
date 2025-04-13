@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw, NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
 import LoginForm from '@/components/LoginForm.vue'
+import Dashboard from '@/views/Dashboard.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -17,6 +18,21 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     redirect: '/dashboard', // Redirect to dashboard if logged in
+  },
+  {
+    path: '/employees',
+    name: 'Employees',
+    component: Dashboard, //  Use Dashboard, and the component will be shown conditionally
+  },
+  {
+    path: '/construction-sites',
+    name: 'ConstructionSites',
+    component: Dashboard, //  Use Dashboard, and the component will be shown conditionally
+  },
+  {
+    path: '/work-tasks',
+    name: 'WorkTasks',
+    component: Dashboard, //  Use Dashboard, and the component will be shown conditionally
   },
 ]
 

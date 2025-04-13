@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace api\controllers;
 
-use api\interfaces\EmployeeServiceInterface;
-use api\models\LoginForm;
 use api\interfaces\AuthServiceInterface;
+use api\models\LoginForm;
+use api\modules\Employee\interfaces\EmployeeServiceInterface;
 use Yii;
 use yii\rest\Controller;
 use yii\web\Response;
@@ -34,8 +34,12 @@ class AuthController extends Controller
 
         if ($model->validate()) {
             if ($this->authService->login($model)) {
-                return Yii::$app->user->identity->toArray(['id', 'username', 'first_name', 'last_name', 'role']
-                ); // Return user info on successful login
+                if (Yii::$app->user->identity !== null) { // Add this null check
+                    return Yii::$app->user->identity->toArray(['id', 'username', 'first_name', 'last_name', 'role']); // Return user info on successful login
+                } else {
+                    Yii::$app->response->statusCode = 500; // Internal Server Error
+                    return ['message' => 'User identity not set after login.']; // More specific error
+                }
             } else {
                 Yii::$app->response->statusCode = 401; // Unauthorized
                 return ['message' => 'Invalid credentials'];
@@ -53,3 +57,4 @@ class AuthController extends Controller
         return Yii::$app->response;
     }
 }
+

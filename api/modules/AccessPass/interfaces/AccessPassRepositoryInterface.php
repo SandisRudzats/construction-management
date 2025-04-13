@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace api\interfaces;
+namespace api\modules\AccessPass\interfaces;
 
 use api\models\AccessPass;
 

@@ -2,14 +2,13 @@
 
 declare(strict_types=1);
 
-namespace api\controllers\v1;
+namespace api\modules\AccessPass\controllers\v1;
 
-use api\interfaces\AccessPassServiceInterface;
-use api\interfaces\AuthServiceInterface;
+use api\modules\AccessPass\interfaces\AccessPassServiceInterface;
 use Yii;
+use yii\filters\auth\HttpBearerAuth;
 use yii\rest\Controller;
 use yii\web\ForbiddenHttpException;
-use yii\filters\auth\HttpBearerAuth;
 
 class AccessPassController extends Controller
 {

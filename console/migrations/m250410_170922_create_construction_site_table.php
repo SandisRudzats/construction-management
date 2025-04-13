@@ -14,13 +14,10 @@ class m250410_170922_create_construction_site_table extends Migration
             $this->createTable(self::TABLE_NAME, [
                 'id' => $this->primaryKey(),
                 'name' => $this->string(255)->notNull(),
-                'manager_id' => $this->integer()->null()->defaultValue(null),
-                'location' => $this->string(255)->null()->defaultValue(null),
-                'area' => $this->float(2)->null()->defaultValue(null),
-                'required_access_level' => $this->integer()->null()->defaultValue(null),
-                'start_date' => $this->date()->null()->defaultValue(null),
-                'end_date' => $this->date()->null()->defaultValue(null),
-                'status' => $this->string(50)->null()->defaultValue(null),
+                'manager_id' => $this->integer()->null(),
+                'location' => $this->string(255)->notNull(),
+                'area' => $this->float(2)->defaultValue(0.0),
+                'required_access_level' => $this->integer()->defaultValue(1),
                 'created_at' => $this->timestamp()->defaultExpression('CURRENT_TIMESTAMP'),
                 'updated_at' => $this->timestamp()->defaultExpression('CURRENT_TIMESTAMP'),
             ]);

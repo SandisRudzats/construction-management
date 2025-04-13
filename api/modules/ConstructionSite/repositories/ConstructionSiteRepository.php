@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace api\repositories;
+namespace api\modules\ConstructionSite\repositories;
 
-use api\interfaces\ConstructionSiteRepositoryInterface;
-use api\modules\constructionSite\models\ConstructionSite;
+use api\modules\ConstructionSite\interfaces\ConstructionSiteRepositoryInterface;
+use api\modules\ConstructionSite\models\ConstructionSite;
 use Throwable;
 use yii\db\Exception;
 use yii\db\StaleObjectException;

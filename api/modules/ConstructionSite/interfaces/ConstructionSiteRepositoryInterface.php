@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace api\interfaces;
+namespace api\modules\ConstructionSite\interfaces;
 
 use api\modules\ConstructionSite\models\ConstructionSite;
 

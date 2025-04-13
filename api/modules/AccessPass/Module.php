@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace api\modules\WorkTask;
+namespace api\modules\AccessPass;
+
 
 use yii\base\Module as BaseModule;
 
 class Module extends BaseModule
 {
-    public $controllerNamespace = 'api\modules\WorkTask\controllers\v1';
+    public $controllerNamespace = 'api\modules\AccessPass\controllers\v1';
 
     public function init()
     {

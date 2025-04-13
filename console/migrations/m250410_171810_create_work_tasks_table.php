@@ -14,9 +14,9 @@ class m250410_171810_create_work_tasks_table extends Migration
             $this->createTable(self::TABLE_NAME, [
                 'id' => $this->primaryKey(),
                 'construction_site_id' => $this->integer()->notNull(),
-                'employee_id' => $this->integer()->null()->defaultValue(null),
-                'start_date' => $this->date()->null()->defaultValue(null),
-                'end_date' => $this->date()->null()->defaultValue(null),
+                'employee_id' => $this->integer()->null(),
+                'start_date' => $this->date()->notNull(),
+                'end_date' => $this->date()->notNull(),
                 'created_at' => $this->timestamp()->defaultExpression('CURRENT_TIMESTAMP'),
                 'updated_at' => $this->timestamp()->defaultExpression('CURRENT_TIMESTAMP'),
             ]);

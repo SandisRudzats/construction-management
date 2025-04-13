@@ -2,28 +2,30 @@
 
 declare(strict_types=1);
 
-namespace api\modules\WorkTask\models;
+namespace api\modules\AccessPass\models;
 
 use api\modules\ConstructionSite\models\ConstructionSite;
 use api\modules\Employee\models\Employee;
+use Yii;
 use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 
 /**
  * @property int $id
- * @property int $construction_site_id
+ * @property int $construct_site_id
  * @property int $employee_id
- * @property string $start_date
- * @property string $end_date
+ * @property string $access_level
+ * @property string $date
  * @property string|null $created_at
  * @property string|null $updated_at
  *
  * @property-read Employee $employee
+ * @property-read string $formattedDate
  * @property-read ConstructionSite $construction-site
  */
-class WorkTask extends ActiveRecord
+class AccessPass extends ActiveRecord
 {
-    public const TABLE_NAME = 'work_tasks';
+    public const TABLE_NAME = 'access_passes';
 
     public static function tableName(): string
     {
@@ -33,23 +35,17 @@ class WorkTask extends ActiveRecord
     public function rules(): array
     {
         return [
-            [['employee_id', 'construction_site_id'], 'required'],
-            [['employee_id', 'construction_site_id'], 'integer'],
-            [['start_date', 'end_date'], 'safe'], // Consider using 'date' validator with a specific format
+            [['construct_site_id', 'employee_id', 'access_level', 'date'], 'required'],
+            [['construct_site_id', 'employee_id'], 'integer'],
+            [['date'], 'date', 'format' => 'yyyy-mm-dd'],
+            [['access_level'], 'string', 'max' => 255],
             [
-                ['employee_id'],
+                ['construct_site_id'],
                 'exist',
-                'skipOnError' => true,
-                'targetClass' => Employee::class,
-                'targetAttribute' => ['employee_id' => 'id']
-            ],
-            [
-                ['construction_site_id'],
-                'exist',
-                'skipOnError' => true,
                 'targetClass' => ConstructionSite::class,
-                'targetAttribute' => ['construction_site_id' => 'id']
+                'targetAttribute' => ['construct_site_id' => 'id']
             ],
+            [['employee_id'], 'exist', 'targetClass' => Employee::class, 'targetAttribute' => ['employee_id' => 'id']],
         ];
     }
 
@@ -57,10 +53,10 @@ class WorkTask extends ActiveRecord
     {
         return [
             'id' => 'ID',
+            'construct_site_id' => 'Construction Site ID',
             'employee_id' => 'Employee ID',
-            'construction_site_id' => 'Construction Site ID',
-            'start_date' => 'Start Date',
-            'end_date' => 'End Date',
+            'access_level' => 'Access Level',
+            'date' => 'Date',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
         ];
@@ -73,6 +69,11 @@ class WorkTask extends ActiveRecord
 
     public function getConstructionSite(): ActiveQuery
     {
-        return $this->hasOne(ConstructionSite::class, ['id' => 'construction_site_id']);
+        return $this->hasOne(ConstructionSite::class, ['id' => 'construct_site_id']);
+    }
+
+    public function getFormattedDate(): string
+    {
+        return Yii::$app->formatter->asDate($this->date, 'long');
     }
 }

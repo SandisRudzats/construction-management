@@ -13,6 +13,6 @@ class Module extends BaseModule
     public function init()
     {
         parent::init();
-        // Custom initialization code for the AccessPass module
+        // Any additional logic for the employee module
     }
 }

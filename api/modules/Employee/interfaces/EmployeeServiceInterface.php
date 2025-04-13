@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace api\interfaces;
+namespace api\modules\Employee\interfaces;
 
-use api\modules\employee\models\Employee;
+use api\modules\Employee\models\Employee;
 
 interface EmployeeServiceInterface
 {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace api\modules\ConstructionSite\models;
 
-use api\modules\employee\models\Employee;
+use api\modules\Employee\models\Employee;
 use api\modules\WorkTask\models\WorkTask;
 use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
@@ -12,10 +12,10 @@ use yii\db\ActiveRecord;
 /**
  * @property int $id
  * @property string $name
- * @property ?int $manager_id
- * @property ?string $location
- * @property ?float $area
- * @property ?string $required_access_level
+ * @property int $manager_id
+ * @property string $location
+ * @property float $area
+ * @property int $required_access_level
  * @property ?string $start_date
  * @property ?string $end_date
  * @property ?string $created_at
@@ -37,8 +37,9 @@ class ConstructionSite extends ActiveRecord
     {
         return [
             [['manager_id', 'location', 'name', 'area', 'required_access_level', 'start_date', 'end_date'], 'required'],
-            [['location', 'access_level'], 'string', 'max' => 255],
+            [['location', 'required_access_level'], 'string', 'max' => 255],
             [['area'], 'number'],
+            [['required_access_level'], 'in', 'range' => ['low', 'medium', 'high']],
         ];
     }
 

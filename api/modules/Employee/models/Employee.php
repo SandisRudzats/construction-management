@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace api\modules\Employee\models;
 
+use api\modules\AccessPass\models\AccessPass;
 use api\modules\WorkTask\models\WorkTask;
 use Yii;
 use yii\base\Exception;
@@ -16,9 +17,9 @@ use yii\web\IdentityInterface;
  * @property string $first_name
  * @property string $last_name
  * @property string|null $birth_date
- * @property string|null $username
+ * @property string $username
  * @property string|null $password_hash
- * @property string|null $access_level
+ * @property int $access_level
  * @property string $role
  * @property string|null $created_at
  * @property string|null $updated_at
@@ -26,10 +27,12 @@ use yii\web\IdentityInterface;
  * @property-write string $password
  * @property-read string $authKey
  * @property-read WorkTask[] $workTasks
+ * @property-read AccessPass[] $accessPasses
  */
 class Employee extends ActiveRecord implements IdentityInterface
 {
     public const TABLE_NAME = 'employees';
+
     public static function tableName(): string
     {
         return self::TABLE_NAME;
@@ -38,8 +41,9 @@ class Employee extends ActiveRecord implements IdentityInterface
     public function rules(): array
     {
         return [
-            [['first_name', 'last_name', 'role'], 'required'],
-            [['first_name', 'last_name', 'access_level', 'role', 'username', 'password_hash'], 'string', 'max' => 255],
+            [['first_name', 'last_name', 'username', 'role'], 'required'],
+            [['role'], 'string', 'max' => 20],
+            [['first_name', 'last_name', 'username', 'password_hash'], 'string', 'max' => 255],
             [['birth_date'], 'date', 'format' => 'yyyy-mm-dd'],
             [['username'], 'unique'],
             [['role'], 'in', 'range' => ['admin', 'manager', 'employee']],
@@ -65,6 +69,11 @@ class Employee extends ActiveRecord implements IdentityInterface
     public function getWorkTasks(): ActiveQuery
     {
         return $this->hasMany(WorkTask::class, ['employee_id' => 'id']);
+    }
+
+    public function getAccessPasses(): ActiveQuery
+    {
+        return $this->hasMany(AccessPass::class, ['employee_id' => 'id']);
     }
 
     public static function findIdentity($id): ?IdentityInterface

@@ -21,8 +21,4 @@ $config = yii\helpers\ArrayHelper::merge(
     require __DIR__ . '/../config/main-local.php'
 );
 
-spl_autoload_register(function ($class) {
-    echo "Autoloading: $class<br>";
-});
-
 (new yii\web\Application($config))->run();

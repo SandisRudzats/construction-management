@@ -5,39 +5,42 @@ declare(strict_types=1);
 namespace api\services;
 
 use api\interfaces\AuthServiceInterface;
-use api\modules\employee\services\EmployeeService;
 use api\models\LoginForm;
+use api\modules\Employee\models\Employee;
 use Yii;
+use yii\rbac\Role;
 
 class AuthService implements AuthServiceInterface
 {
-
-    public function __construct(private EmployeeService $employeeService)
-    {
-    }
-
     /**
-     * @throws \Exception
+     * @param LoginForm $model
+     * @return bool
      */
     public function login(LoginForm $model): bool
     {
-        $employee = $this->employeeService->findEmployeeByUsername($model->username);
-
-        if ($employee && Yii::$app->security->validatePassword($model->password, $employee->password_hash)) {
-            Yii::$app->user->login($employee, $model->rememberMe ? 3600 * 24 * 30 : 0);
-            $auth = Yii::$app->authManager;
-            $role = $auth->getRole($employee->role);
-
-            if ($role) {
-                $auth->assign($role, $employee->id);
-            }
-            return true;
+        $user = $this->getUser($model->username);
+        if (!$user || !Yii::$app->security->validatePassword($model->password, $user->password_hash)) {
+            return false;
         }
-        return false;
+
+        //  Actual login logic (e.g., setting session, creating token)
+        return Yii::$app->user->login($user);
     }
 
+    /**
+     * @return void
+     */
     public function logout(): void
     {
         Yii::$app->user->logout();
+    }
+
+    /**
+     * @param string $username
+     * @return Employee|null
+     */
+    public function getUser(string $username): ?Employee
+    {
+        return Employee::findOne(['username' => $username]);
     }
 }

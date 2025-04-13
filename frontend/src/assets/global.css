@@ -10,6 +10,14 @@
   --accent-red: #f44336;
   --accent-yellow: #ffeb3b;
   --border-color: #cccccc;
+  --dark-gray-button: #555;
+  --sidebar-width: 300px;
+  --input-bg: #ffffff;
+  --input-text: #212529;
+  --input-text-rgb: 33, 37, 41;
+  --primary: #007bff;
+  --primary-dark: #0056b3;
+  --primary-rgb: 0, 123, 255;
 }
 
 body {
@@ -27,12 +35,23 @@ body {
 }
 
 /* Hover effect for interactive elements */
-button, input, select, textarea, .btn-primary, .card, .header {
+button,
+input,
+select,
+textarea,
+.btn-primary,
+.card,
+.header {
   transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
 }
 
-button:hover, input:hover, select:hover, textarea:hover,
-.btn-primary:hover, .card:hover, .header:hover {
+button:hover,
+input:hover,
+select:hover,
+textarea:hover,
+.btn-primary:hover,
+.card:hover,
+.header:hover {
   background-color: rgba(0, 0, 0, 0.05);
   transform: scale(1.02);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -69,15 +88,41 @@ button:hover, input:hover, select:hover, textarea:hover,
   background-color: rgba(244, 67, 54, 0.1);
   border: 1px solid var(--accent-red);
   color: var(--accent-red);
-  padding: 0.5rem; /* Smaller padding */
+  padding: 0.5rem;
   text-align: center;
   margin-top: 1rem;
   opacity: 0.6;
-  font-size: 0.9rem; /* Smaller font size */
+  font-size: 0.9rem;
 }
 
 .form-control {
   width: 100%;
   padding: 0.75rem;
+  margin-bottom: 1rem;
   border: 1px solid var(--border-color);
+  /*align-self: auto;*/
+}
+
+.btn-dark-gray {
+  background-color: var(--dark-gray-button);
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-dark-gray-confirm {
+  background-color: var(--dark-gray-button);
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.btn-dark-gray:hover,
+.btn-dark-gray-confirm {
+  background-color: #444;
 }
