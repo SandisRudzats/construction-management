@@ -42,7 +42,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue';
+import { defineComponent, onMounted } from 'vue';
 import { defineStore } from 'pinia';
 import { createPinia } from 'pinia'; // Import createPinia
 import api from '@/services/api';

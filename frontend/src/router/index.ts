@@ -1,14 +1,16 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import type { RouteRecordRaw, NavigationGuardNext, RouteLocationNormalized } from 'vue-router' // Removed duplicate import
+import { createRouter, createWebHistory} from 'vue-router';
+import type { NavigationGuardNext, RouteLocationNormalized, RouteRecordRaw } from 'vue-router';
 import LoginForm from '@/components/auth/LoginForm.vue';
 import Dashboard from '@/views/Dashboard.vue';
-import AccessControlWrapper from '@/components/auth/AccessControlWrapper.vue'; // Import the AccessControlWrapper
+// import AccessControlWrapper from '@/components/auth/AccessControlWrapper.vue'; // You can use this, but I'll show a more common approach
+
 // Construction Site Components
 import CreateConstructionSite from '@/components/construction-site/CreateConstructionSite.vue';
 import DeleteConstructionSite from '@/components/construction-site/DeleteConstructionSite.vue';
 import EditConstructionSite from '@/components/construction-site/EditConstructionSite.vue';
 import SiteWorkTasks from '@/components/construction-site/SiteWorkTasks.vue';
 import ViewConstructionSites from '@/components/construction-site/ViewConstructionSites.vue';
+
 // Employee Components
 import CreateEmployee from '@/components/employee/CreateEmployee.vue';
 import DeactivateEmployee from '@/components/employee/DeactivateEmployee.vue';
@@ -16,6 +18,7 @@ import EditEmployee from '@/components/employee/EditEmployee.vue';
 import EmployeeProfile from '@/components/employee/EmployeeProfile.vue';
 import ManagerSubordinates from '@/components/employee/ManagerSubordinates.vue';
 import ViewEmployees from '@/components/employee/ViewEmployees.vue';
+
 // Work Task Components
 import CreateWorkTask from '@/components/work-task/CreateWorkTask.vue';
 import DeleteWorkTask from '@/components/work-task/DeleteWorkTask.vue';
@@ -23,7 +26,7 @@ import EditWorkTask from '@/components/work-task/EditWorkTask.vue';
 import EmployeeWorkTasks from '@/components/work-task/EmployeeWorkTasks.vue';
 import ViewWorkTasks from '@/components/work-task/ViewWorkTasks.vue';
 
-const routes: Array<RouteRecordRaw> = [
+const routes: RouteRecordRaw[] = [
   {
     path: '/login',
     name: 'Login',
@@ -138,13 +141,6 @@ const routes: Array<RouteRecordRaw> = [
     component: EmployeeWorkTasks,
     meta: { requiresAuth: true },
   },
-  // Settings
-  {
-    path: '/settings',
-    name: 'Settings',
-    component: Dashboard,  //  Use Dashboard, and the component will be shown conditionally
-    meta: { requiresAuth: true },
-  },
 ];
 
 const router = createRouter({
@@ -155,7 +151,7 @@ const router = createRouter({
 router.beforeEach(
   (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
     const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
-    const isLoggedIn = !!localStorage.getItem('user');
+    const isLoggedIn = !!localStorage.getItem('user'); // Or use your auth mechanism
 
     if (requiresAuth && !isLoggedIn) {
       next('/login');

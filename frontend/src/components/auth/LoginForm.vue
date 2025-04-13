@@ -18,7 +18,7 @@
         autocomplete="current-password"
         required
       />
-      <button type="submit" class="btn-dark-gray-confirm login-button">Login</button>
+      <button type="submit" class="btn-dark-gray-confirm">Login</button>
       <div v-if="error" class="error-message">{{ error }}</div>
     </form>
   </div>
@@ -27,8 +27,8 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import api from '@/services/api'
-import { useUserStore } from '@/stores/user'
+import api from '@/services/api' // Adjust the path if needed
+import { useUserStore } from '@/stores/user' // Adjust the path if needed
 
 export default defineComponent({
   name: 'LoginForm',
@@ -49,14 +49,14 @@ export default defineComponent({
       }
 
       try {
-        const response = await api.post('/auth/login', {
+        const response = await api.post('/auth/login', { //  Use your API endpoint
           username: username.value,
           password: password.value,
         })
 
-        userStore.setUser(response.data)
-        localStorage.setItem('user', JSON.stringify(response.data))
-        await router.push('/dashboard')
+        userStore.setUser(response.data); // Store user data
+        localStorage.setItem('user', JSON.stringify(response.data)); // Persist
+        await router.push('/dashboard') //  your dashboard route
       } catch (err: any) {
         const message =
           err.response?.data?.message || 'Login failed. Please check your credentials.'
@@ -81,14 +81,14 @@ export default defineComponent({
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: var(--primary-bg);
+  background-color: var(--primary-bg); /* Use your CSS variable */
 }
 
 .login-form {
   width: 90%;
   max-width: 350px;
   padding: 2rem;
-  background-color: var(--card-bg);
+  background-color: var(--card-bg); /* Use your CSS variable */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   border-radius: 10px;
   display: flex;
@@ -108,7 +108,7 @@ export default defineComponent({
 .login-heading {
   font-size: 2rem;
   font-weight: bold;
-  color: var(--primary-text);
+  color: var(--primary-text); /* Use your CSS variable */
   margin-bottom: 2rem;
   text-align: center;
 }
@@ -118,60 +118,34 @@ export default defineComponent({
   margin-bottom: 1.5rem;
   padding: 1rem;
   font-size: 1rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-color); /* Use your CSS variable */
   border-radius: 5px;
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
-  background-color: var(--input-bg);
-  color: var(--primary-text);
+  background-color: var(--input-bg); /* Use your CSS variable */
+  color: var(--primary-text); /* Use your CSS variable */
 }
 
 .form-control::placeholder {
-  color: rgba(var(--input-text-rgb), 0.3);
+  color: rgba(var(--input-text-rgb), 0.3); /* Use your CSS variable */
   opacity: 1;
 }
 
 .form-control:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 2px 6px rgba(var(--primary-rgb), 0.3);
-}
-
-.btn-primary {
-  width: 100%;
-  padding: 1rem;
-  font-size: 1.1rem;
-  font-weight: bold;
-  background-color: var(--primary);
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition:
-    background-color 0.3s ease,
-    transform 0.1s ease;
-}
-
-.btn-primary:hover {
-  background-color: var(--primary-dark);
-  transform: translateY(-2px);
-}
-
-.btn-primary:active {
-  background-color: color-mix(in srgb, var(--primary-dark), #000000 20%);
-  transform: translateY(0);
+  border-color: var(--primary); /* Use your CSS variable */
+  box-shadow: 0 2px 6px rgba(var(--primary-rgb), 0.3); /* Use your CSS variable */
 }
 
 .error-message {
-  color: var(--accent-red);
+  color: var(--accent-red); /* Use your CSS variable */
   margin-top: 1.5rem;
   text-align: center;
   font-size: 0.9rem;
   padding: 0.5rem;
   background-color: rgba(244, 67, 54, 0.1);
   border-radius: 5px;
-  border: 1px solid var(--accent-red);
+  border: 1px solid var(--accent-red); /* Use your CSS variable */
 }
 </style>
-``` I've corrected the errors and adjusted the code to align with your project's CSS variabl

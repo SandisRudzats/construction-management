@@ -34,4 +34,13 @@ return [
     36 => [
         'employee',
     ],
+    37 => [
+        'employee',
+    ],
+    38 => [
+        'employee',
+    ],
+    39 => [
+        'manager',
+    ],
 ];

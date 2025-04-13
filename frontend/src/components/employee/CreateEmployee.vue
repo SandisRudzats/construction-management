@@ -118,7 +118,7 @@
 import { defineComponent, ref, reactive, onMounted } from 'vue';
 import api from '@/services/api';
 import { useVuelidate } from '@vuelidate/core';
-import { required, email, minLength, helpers } from '@vuelidate/validators';
+import { required, minLength, helpers } from '@vuelidate/validators';
 import { useRouter } from 'vue-router'; // Import useRouter
 
 // Custom validator for date format (YYYY-MM-DD)
@@ -135,7 +135,7 @@ interface EmployeeData {
 }
 
 export default defineComponent({
-  name: 'CreateEmployeeView',
+  name: 'CreateEmployee',
   setup() {
     const employeeData: EmployeeData = reactive({
       first_name: '',
@@ -190,7 +190,7 @@ export default defineComponent({
           employeeData.role = 'employee';
           v$.value.$reset();
           // Redirect to the employees list page after successful creation
-          await router.push('/employees');
+          // await router.push('/employees');
         } else {
           error.value = 'Failed to create employee.';
         }
@@ -200,13 +200,6 @@ export default defineComponent({
         isSubmitting.value = false;
       }
     };
-
-    // onMounted hook to redirect if the user is not on the employees route.
-    onMounted(() => {
-      if (router.currentRoute.value.path !== '/employees') {
-        router.push('/employees');
-      }
-    });
 
     return {
       employeeData,
