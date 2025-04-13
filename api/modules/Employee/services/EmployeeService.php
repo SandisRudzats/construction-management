@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace api\modules\Employee\services;
 
-use api\interfaces\EmployeeRepositoryInterface;
-use api\interfaces\EmployeeServiceInterface;
-use api\modules\employee\models\Employee;
+use api\modules\Employee\interfaces\EmployeeRepositoryInterface;
+use api\modules\Employee\interfaces\EmployeeServiceInterface;
+use api\modules\Employee\models\Employee;
 use yii\db\Exception;
 
 class EmployeeService implements EmployeeServiceInterface

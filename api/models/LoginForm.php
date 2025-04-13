@@ -4,29 +4,26 @@ declare(strict_types=1);
 
 namespace api\models;
 
+use api\modules\Employee\models\Employee;
 use Yii;
 use yii\base\Model;
-use api\modules\employee\models\Employee; // Still need the model for type hinting in getUser
 
 /**
  * @property string|null $username
  * @property string|null $password
- * @property bool $rememberMe
- * @property Employee|null $_user
+ * @property Employee|null $user
  */
 class LoginForm extends Model
 {
-    public $username;
-    public $password;
-    public $rememberMe = false;
+    public string $username;
+    public string $password;
 
-    private ?Employee $_user = null;
+    private ?Employee $user = null;
 
     public function rules(): array
     {
         return [
             [['username', 'password'], 'required'],
-            ['rememberMe', 'boolean'],
             ['password', 'validatePassword'],
         ];
     }
@@ -36,7 +33,6 @@ class LoginForm extends Model
         return [
             'username' => Yii::t('app', 'Username or Email'),
             'password' => Yii::t('app', 'Password'),
-            'rememberMe' => Yii::t('app', 'Remember me'),
         ];
     }
 
@@ -44,7 +40,7 @@ class LoginForm extends Model
     {
         if (!$this->hasErrors()) {
             $user = $this->getUser();
-            if (!$user || !Yii::$app->security->validatePassword($this->password, $user->password_hash)) {
+            if (!$user || $user->password_hash === null || !Yii::$app->security->validatePassword($this->password, $user->password_hash)) {
                 $this->addError($attribute, Yii::t('app', 'Incorrect username or password.'));
             }
         }
@@ -57,9 +53,9 @@ class LoginForm extends Model
      */
     public function getUser(): ?Employee
     {
-        if ($this->_user === null) {
-            $this->_user = Employee::findByUsername($this->username); // Direct model interaction for now, AuthService will handle retrieval
+        if ($this->user === null) {
+            $this->user = Employee::findOne(['username' => $this->username]);
         }
-        return $this->_user;
+        return $this->user;
     }
 }

@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace api\controllers;
 
-use api\interfaces\EmployeeServiceInterface;
-use api\models\LoginForm;
 use api\interfaces\AuthServiceInterface;
-use api\services\AuthService;
+use api\models\LoginForm;
+use api\modules\Employee\interfaces\EmployeeServiceInterface;
 use Yii;
 use yii\rest\Controller;
 use yii\web\Response;
@@ -35,8 +34,30 @@ class AuthController extends Controller
 
         if ($model->validate()) {
             if ($this->authService->login($model)) {
-                return Yii::$app->user->identity->toArray(['id', 'username', 'first_name', 'last_name', 'role']
-                ); // Return user info on successful login
+                $user = Yii::$app->user->identity;
+                if ($user !== null) {
+                    $authManager = Yii::$app->authManager;
+                    $roles = $authManager->getRolesByUser($user->id);
+
+                    // Convert roles to a simple array of names
+                    $roleNames = array_keys($roles);
+
+                    // Get permissions for the user (more complex, needs iteration)
+                    $permissions = [];
+                    foreach ($authManager->getPermissionsByUser($user->id) as $permissionName => $permission) {
+                        $permissions[] = $permissionName;
+                    }
+
+                    $userData = $user->toArray(['id', 'username', 'first_name', 'last_name', 'role']);
+
+                    $userData['roles'] = $roleNames; // Add roles to the response
+                    $userData['permissions'] = $permissions; // Add permissions
+
+                    return $userData; // Return user info with roles and permissions on successful login
+                } else {
+                    Yii::$app->response->statusCode = 500; // Internal Server Error
+                    return ['message' => 'User identity not set after login.']; // More specific error
+                }
             } else {
                 Yii::$app->response->statusCode = 401; // Unauthorized
                 return ['message' => 'Invalid credentials'];
@@ -54,3 +75,4 @@ class AuthController extends Controller
         return Yii::$app->response;
     }
 }
+

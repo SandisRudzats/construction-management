@@ -38,6 +38,7 @@ class DatabaseSeederController extends Controller
         $employee->last_name = $lastName;
 
         $role = self::ROLES_MAPPING[$identifier] ?? null;
+
         if (!$role) {
             $message = sprintf(
                 "Invalid role identifier: %s, must be one of these - 1 - employee, 2 - admin or 3 - manager \n",

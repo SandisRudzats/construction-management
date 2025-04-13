@@ -13,13 +13,13 @@ use yii\db\ActiveRecord;
  * @property int $id
  * @property int $construction_site_id
  * @property int $employee_id
- * @property string|null $start_date
- * @property string|null $end_date
+ * @property string $start_date
+ * @property string $end_date
  * @property string|null $created_at
  * @property string|null $updated_at
  *
  * @property-read Employee $employee
- * @property-read ConstructionSite $constructionSite
+ * @property-read ConstructionSite $construction-site
  */
 class WorkTask extends ActiveRecord
 {
