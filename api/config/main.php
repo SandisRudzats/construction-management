@@ -134,13 +134,15 @@ return [
                 'auth/login' => 'auth/login',
                 'auth/logout' => 'auth/logout',
                 'v1/construction-site' => 'construction-site/construction-site/',
-                // todo :: atstāju sev piemēram priekš custom stuff
-                'v1/construction-site/sandis' => 'construction-site/construction-site/sandis',
                 'v1/employee/create' => 'employee/employee/create',
                 'v1/employee/' => 'employee/employee/',
-//                'POST v1/employee' => 'employee/employee/create',
                 'v1/access-pass' => 'access-pass/access-pass/',
                 'v1/work-task' => 'work-task/work-task/',
+                [
+                    'pattern' => 'employee/profile',
+                    'route' => 'employee/employee/view-self',
+                    'verb' => 'GET',
+                ],
             ],
         ],
         'cors' => [

@@ -7,15 +7,13 @@
     <div class="main-content">
       <Sidebar @section-selected="handleSectionSelected" />
       <div class="dashboard-content">
-        <CreateEmployeeView
-          v-if="selectedSection === 'employees'"
-          class="side-by-side"
-        />
-        <ViewEmployeesView
-          v-if="selectedSection === 'employees'"
-          class="side-by-side"
-        />
-        <div v-else>
+        <CreateEmployee v-if="selectedSection === 'employees'" class="full-width-content" />
+        <ViewEmployees v-if="selectedSection === 'employees'" class="full-width-content" />
+        <CreateConstructionSite v-if="selectedSection === 'construction-sites'"/>
+        <ViewConstructionSites v-if="selectedSection === 'construction-sites'"/>
+        <CreateWorkTask v-if="selectedSection === 'work-tasks'"/>
+        <ViewWorkTasks v-if="selectedSection === 'work-tasks'"/>
+        <div v-if="selectedSection === 'dashboard'">
           <p>Welcome to the dashboard!</p>
         </div>
       </div>
@@ -28,20 +26,28 @@ import { defineComponent, ref } from 'vue';
 import api from '@/services/api';
 import { useRouter } from 'vue-router';
 import Sidebar from '@/components/Sidebar.vue';
-import CreateEmployeeView from '@/components/employee/CreateEmployee.vue';
-import ViewViewEmployeesView from '@/components/employee/ViewEmployees.vue';
+import CreateEmployee from '@/components/employee/CreateEmployee.vue';
+import ViewEmployees from '@/components/employee/ViewEmployees.vue';
+import CreateConstructionSite from '@/components/construction-site/CreateConstructionSite.vue';
+import ViewConstructionSites from '@/components/construction-site/ViewConstructionSites.vue';
+import CreateWorkTask from '@/components/work-task/CreateWorkTask.vue';
+import ViewWorkTasks from '@/components/work-task/ViewWorkTasks.vue';
 
 export default defineComponent({
   name: 'Dashboard',
   components: {
     Sidebar,
-    CreateEmployeeView: CreateEmployeeView,
-    ViewEmployeesView: ViewViewEmployeesView, // Register the component
+    CreateEmployee,
+    ViewEmployees,
+    CreateConstructionSite,
+    ViewConstructionSites,
+    CreateWorkTask,
+    ViewWorkTasks,
   },
   setup() {
     const error = ref<string | null>(null);
     const router = useRouter();
-    const selectedSection = ref<string | null>('dashboard');
+    const selectedSection = ref<string | null>(null);
 
     const handleLogout = async () => {
       error.value = null;
@@ -55,7 +61,6 @@ export default defineComponent({
     };
 
     const handleSectionSelected = (section: string) => {
-      console.log('Selected section:', section);
       selectedSection.value = section;
     };
 
@@ -112,18 +117,14 @@ export default defineComponent({
 .dashboard-content {
   flex-grow: 1;
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
   padding: 2rem;
   color: var(--primary-text);
-  flex-direction: row; /* Arrange children in a row */
-  gap: 2rem; /* Add some gap between the two components */
 }
 
-.side-by-side {
-  width: 50%; /* Each component takes up 50% of the width */
-  transform: scale(0.8);
-  transform-origin: top left;
-  padding-left: 2rem;
+.full-width-content {
+  width: 100%;
 }
 </style>

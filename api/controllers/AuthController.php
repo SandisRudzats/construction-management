@@ -34,8 +34,26 @@ class AuthController extends Controller
 
         if ($model->validate()) {
             if ($this->authService->login($model)) {
-                if (Yii::$app->user->identity !== null) { // Add this null check
-                    return Yii::$app->user->identity->toArray(['id', 'username', 'first_name', 'last_name', 'role']); // Return user info on successful login
+                $user = Yii::$app->user->identity;
+                if ($user !== null) {
+                    $authManager = Yii::$app->authManager;
+                    $roles = $authManager->getRolesByUser($user->id);
+
+                    // Convert roles to a simple array of names
+                    $roleNames = array_keys($roles);
+
+                    // Get permissions for the user (more complex, needs iteration)
+                    $permissions = [];
+                    foreach ($authManager->getPermissionsByUser($user->id) as $permissionName => $permission) {
+                        $permissions[] = $permissionName;
+                    }
+
+                    $userData = $user->toArray(['id', 'username', 'first_name', 'last_name', 'role']);
+
+                    $userData['roles'] = $roleNames; // Add roles to the response
+                    $userData['permissions'] = $permissions; // Add permissions
+
+                    return $userData; // Return user info with roles and permissions on successful login
                 } else {
                     Yii::$app->response->statusCode = 500; // Internal Server Error
                     return ['message' => 'User identity not set after login.']; // More specific error

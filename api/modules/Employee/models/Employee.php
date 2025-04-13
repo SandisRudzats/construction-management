@@ -44,9 +44,10 @@ class Employee extends ActiveRecord implements IdentityInterface
             [['first_name', 'last_name', 'username', 'role'], 'required'],
             [['role'], 'string', 'max' => 20],
             [['first_name', 'last_name', 'username', 'password_hash'], 'string', 'max' => 255],
-            [['birth_date'], 'date', 'format' => 'yyyy-mm-dd'],
+            [['birth_date'], 'date', 'format' => 'Y-m-d'], // Corrected date format
             [['username'], 'unique'],
             [['role'], 'in', 'range' => ['admin', 'manager', 'employee']],
+            [['access_level'], 'integer', 'min' => 1, 'max' => 5],
         ];
     }
 

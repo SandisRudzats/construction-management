@@ -11,6 +11,9 @@
           required
           class="form-control"
         />
+        <div v-if="v$.first_name.$error" class="error-message">
+          {{ v$.first_name.$errors[0].$message }}
+        </div>
       </div>
       <div class="form-group">
         <input
@@ -21,6 +24,9 @@
           required
           class="form-control"
         />
+        <div v-if="v$.last_name.$error" class="error-message">
+          {{ v$.last_name.$errors[0].$message }}
+        </div>
       </div>
       <div class="form-group">
         <input
@@ -30,6 +36,9 @@
           placeholder="Birth Date"
           class="form-control"
         />
+        <div v-if="v$.birth_date.$error" class="error-message">
+          {{ v$.birth_date.$errors[0].$message }}
+        </div>
       </div>
       <div class="form-group">
         <input
@@ -40,6 +49,9 @@
           required
           class="form-control"
         />
+        <div v-if="v$.username.$error" class="error-message">
+          {{ v$.username.$errors[0].$message }}
+        </div>
       </div>
       <div class="form-group">
         <input
@@ -50,34 +62,52 @@
           required
           class="form-control"
         />
+        <div v-if="v$.password.$error" class="error-message">
+          {{ v$.password.$errors[0].$message }}
+        </div>
       </div>
       <div class="form-group">
         <select
           id="access_level"
           v-model="employeeData.access_level"
           required
-          class="form-control"
+          class="form-control select-placeholder"
         >
+          <option value="" disabled hidden>
+            Access Level
+          </option>
           <option :value="1">1</option>
           <option :value="2">2</option>
           <option :value="3">3</option>
           <option :value="4">4</option>
           <option :value="5">5</option>
         </select>
+        <div v-if="v$.access_level.$error" class="error-message">
+          {{ v$.access_level.$errors[0].$message }}
+        </div>
       </div>
       <div class="form-group">
         <select
           id="role"
           v-model="employeeData.role"
           required
-          class="form-control"
+          class="form-control select-placeholder"
         >
+          <option value="" disabled hidden>role</option>
           <option value="admin">admin</option>
           <option value="manager">manager</option>
           <option value="employee">employee</option>
         </select>
+        <div v-if="v$.role.$error" class="error-message">
+          {{ v$.role.$errors[0].$message }}
+        </div>
       </div>
-      <button type="submit" class="btn-dark-gray-confirm">Create Employee</button>
+      <div class="button-group">
+        <button type="submit" class="btn-dark-gray-confirm" :disabled="isSubmitting">
+          <span v-if="isSubmitting">Creating...</span>
+          <span v-else>Create Employee</span>
+        </button>
+      </div>
       <div v-if="error" class="error-message">{{ error }}</div>
       <div v-if="successMessage" class="success-message">{{ successMessage }}</div>
     </form>
@@ -85,78 +115,110 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
-import api from '@/services/api.ts'
+import { defineComponent, ref, reactive, onMounted } from 'vue';
+import api from '@/services/api';
+import { useVuelidate } from '@vuelidate/core';
+import { required, email, minLength, helpers } from '@vuelidate/validators';
+import { useRouter } from 'vue-router'; // Import useRouter
+
+// Custom validator for date format (YYYY-MM-DD)
+const dateFormat = helpers.regex(/^\d{4}-\d{2}-\d{2}$/);
 
 interface EmployeeData {
-  first_name: string
-  last_name: string
-  birth_date: string
-  username: string
-  password: string
-  access_level: number | null
-  role: string
+  first_name: string;
+  last_name: string;
+  birth_date: string;
+  username: string;
+  password: string;
+  access_level: number | null;
+  role: string;
 }
 
 export default defineComponent({
   name: 'CreateEmployeeView',
   setup() {
-    const employeeData: EmployeeData = {
+    const employeeData: EmployeeData = reactive({
       first_name: '',
       last_name: '',
       birth_date: '',
       username: '',
       password: '',
       access_level: 1, // Default access level
-      role: 'Employee',
-    }
+      role: 'employee',
+    });
 
-    const error = ref<string | null>(null)
-    const successMessage = ref<string | null>(null)
+    const error = ref<string | null>(null);
+    const successMessage = ref<string | null>(null);
+    const isSubmitting = ref(false);
+    const router = useRouter(); // Use useRouter
+
+    const rules = {
+      first_name: { required },
+      last_name: { required },
+      birth_date: { dateFormat }, // Use the custom validator
+      username: { required, minLength: minLength(4) },
+      password: { required, minLength: minLength(8) },
+      access_level: { required },
+      role: { required },
+    };
+
+    const v$ = useVuelidate(rules, employeeData);
 
     const handleSubmit = async () => {
-      error.value = null
-      successMessage.value = null
+      isSubmitting.value = true;
+      error.value = null;
+      successMessage.value = null;
+
+      const validationResult = await v$.value.$validate(); // Await validation
+      if (!validationResult) {
+        isSubmitting.value = false;
+        return; // Stop if the form is not valid
+      }
+
       try {
-        if (
-          !employeeData.first_name ||
-          !employeeData.last_name ||
-          !employeeData.username ||
-          !employeeData.password ||
-          !employeeData.role ||
-          employeeData.access_level === null
-        ) {
-          error.value = 'Please fill in all required fields.'
-          return
-        }
-
-        const response = await api.post('/v1/employee/create', employeeData)
-
-        if (response.status === 200) {
-          successMessage.value = response.data.message || 'Employee created successfully!'
-          employeeData.first_name = ''
-          employeeData.last_name = ''
-          employeeData.birth_date = ''
-          employeeData.username = ''
-          employeeData.password = ''
-          employeeData.access_level = 1
-          employeeData.role = 'employee'
+        const response = await api.post('v1/employee/create', employeeData);
+        const validStatusCodes = [200,201];
+        if (validStatusCodes.includes(response.status)) {
+          successMessage.value =
+            response.data.message || 'Employee created successfully!';
+          employeeData.first_name = '';
+          employeeData.last_name = '';
+          employeeData.birth_date = '';
+          employeeData.username = '';
+          employeeData.password = '';
+          employeeData.access_level = 1;
+          employeeData.role = 'employee';
+          v$.value.$reset();
+          // Redirect to the employees list page after successful creation
+          await router.push('/employees');
         } else {
-          error.value = 'Failed to create employee.'
+          error.value = 'Failed to create employee.';
         }
       } catch (err: any) {
-        error.value = err.response?.data?.message || 'An error occurred.'
+        error.value = err.response?.data?.message || 'An error occurred.';
+      } finally {
+        isSubmitting.value = false;
       }
-    }
+    };
+
+    // onMounted hook to redirect if the user is not on the employees route.
+    onMounted(() => {
+      if (router.currentRoute.value.path !== '/employees') {
+        router.push('/employees');
+      }
+    });
 
     return {
       employeeData,
       error,
       handleSubmit,
       successMessage,
-    }
+      v$,
+      isSubmitting,
+      router
+    };
   },
-})
+});
 </script>
 
 <style scoped>
@@ -172,6 +234,11 @@ export default defineComponent({
   align-items: center;
 }
 
+.form-group {
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
 label {
   display: block;
   margin-bottom: 0.5rem;
@@ -179,10 +246,10 @@ label {
   font-weight: bold;
 }
 
-input[type='text'],
-input[type='date'],
-input[type='number'],
-input[type='password'],
+input[type="text"],
+input[type="date"],
+input[type="number"],
+input[type="password"],
 select {
   width: 100%;
   padding: 0.75rem;
@@ -194,33 +261,56 @@ select {
   color: var(--input-text);
 }
 
-input[type='text']::placeholder,
-input[type='date']::placeholder,
-input[type='number']::placeholder,
-input[type='password']::placeholder,
+input[type="text"]::placeholder,
+input[type="date"]::placeholder,
+input[type="number"]::placeholder,
+input[type="password"]::placeholder,
 select::placeholder {
   color: rgba(var(--input-text-rgb), 0.6);
 }
 
-input[type='text']:focus,
-input[type='date']:focus,
-input[type='number']:focus,
-input[type='password']:focus,
+input[type="text"]:focus,
+input[type="date"]:focus,
+input[type="number"]:focus,
+input[type="password"]:focus,
 select:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.2);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary {
+  padding: 0.75rem 1.5rem;
+  background-color: var(--header-bg);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-top: 1rem;
+  width: fit-content;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark);
+}
+
+.btn-primary:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
 }
 
 .error-message {
   color: #dc3545;
-  margin-top: 1rem;
-  padding: 0.75rem;
+  margin-top: 0.5rem;
+  padding: 0.25rem 0.5rem;
   background-color: #f8d7da;
   border: 1px solid #f5c6cb;
   border-radius: 4px;
   width: 100%;
-  text-align: center;
+  text-align: left;
+  font-size: 0.875rem;
 }
 
 .success-message {
@@ -234,8 +324,10 @@ select:focus {
   text-align: center;
 }
 
-/* Remove this style */
-.select-placeholder option:first-child {
-  color: rgba(var(--input-text-rgb), 0.6);
+.button-group {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+  width: 100%;
 }
 </style>
