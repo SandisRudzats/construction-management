@@ -19,13 +19,6 @@
         <div v-if="showEmployeesSection" class="sidebar-sub-options">
           <div
             v-if="hasPermission('manageEmployees')"
-            @click.stop="handleSectionSelect('employees')"
-            class="sidebar-option sub-option"
-          >
-            View Employees
-          </div>
-          <div
-            v-if="hasPermission('manageEmployees')"
             @click.stop="handleSectionSelect('create-employee')"
             class="sidebar-option sub-option"
           >
@@ -36,14 +29,14 @@
             @click.stop="handleSectionSelect('edit-employee')"
             class="sidebar-option sub-option"
           >
-            Edit Employees
+            Employees
           </div>
           <div
             v-if="hasPermission('viewOwnProfile')"
             @click.stop="handleSectionSelect('view-employee-profile')"
             class="sidebar-option sub-option"
           >
-            View Employee Profile
+            My Profile
           </div>
           <div
             v-if="hasPermission('viewTeam')"
@@ -64,14 +57,14 @@
             @click.stop="handleSectionSelect('construction-sites')"
             class="sidebar-option sub-option"
           >
-            View Sites
+            Manage Sites and Tasks
           </div>
           <div
             v-if="hasPermission('viewAssignedSites')"
             @click.stop="handleSectionSelect('view-assigned-sites')"
             class="sidebar-option sub-option"
           >
-            View assigned Sites
+            View assigned Sites and Tasks
           </div>
           <div
             v-if="hasPermission('manageSites')"
@@ -79,27 +72,6 @@
             class="sidebar-option sub-option"
           >
             Create Site
-          </div>
-          <div
-            v-if="hasPermission('manageSites')"
-            @click.stop="handleSectionSelect('edit-construction-site')"
-            class="sidebar-option sub-option"
-          >
-            Edit Sites
-          </div>
-          <div
-            v-if="hasPermission('manageSites')"
-            @click.stop="handleSectionSelect('delete-construction-site')"
-            class="sidebar-option sub-option"
-          >
-            Delete Sites
-          </div>
-          <div
-            v-if="hasPermission('manageOwnSites')"
-            @click.stop="handleSectionSelect('view-site-work-tasks')"
-            class="sidebar-option sub-option"
-          >
-            View Site Work Tasks
           </div>
         </div>
 
@@ -121,27 +93,6 @@
             class="sidebar-option sub-option"
           >
             Create Task
-          </div>
-          <div
-            v-if="hasPermission('manageAllTasks')"
-            @click.stop="handleSectionSelect('edit-work-task')"
-            class="sidebar-option sub-option"
-          >
-            Edit Tasks
-          </div>
-          <div
-            v-if="hasPermission('manageAllTasks')"
-            @click.stop="handleSectionSelect('delete-work-task')"
-            class="sidebar-option sub-option"
-          >
-            Delete Tasks
-          </div>
-          <div
-            v-if="hasPermission('viewOwnTasks')"
-            @click.stop="handleSectionSelect('view-employee-work-tasks')"
-            class="sidebar-option sub-option"
-          >
-            View Employee Work Tasks
           </div>
         </div>
         <button class="sidebar-option gray-button" @click="handleLogout">Logout</button>
@@ -171,16 +122,13 @@
           <ViewConstructionSites />
         </div>
         <div v-else-if="selectedSection === 'view-assigned-sites'">
-          <ViewConstructionSites />
+          <ViewAssignedSites />
         </div>
         <div v-else-if="selectedSection === 'create-construction-site'">
           <CreateConstructionSite />
         </div>
         <div v-else-if="selectedSection === 'edit-construction-site'">
           <EditConstructionSite />
-        </div>
-        <div v-else-if="selectedSection === 'delete-construction-site'">
-          <DeleteConstructionSite />
         </div>
         <div v-else-if="selectedSection === 'view-site-work-tasks'">
           <SiteWorkTasks />
@@ -193,9 +141,6 @@
         </div>
         <div v-else-if="selectedSection === 'edit-work-task'">
           <EditWorkTask />
-        </div>
-        <div v-else-if="selectedSection === 'delete-work-task'">
-          <DeleteWorkTask />
         </div>
         <div v-else-if="selectedSection === 'view-employee-work-tasks'">
           <EmployeeWorkTasks />
@@ -223,18 +168,18 @@ import ManagerSubordinates from '@/components/employee/ManagerSubordinates.vue'
 import ViewConstructionSites from '@/components/construction-site/ViewConstructionSites.vue'
 import CreateConstructionSite from '@/components/construction-site/CreateConstructionSite.vue'
 import EditConstructionSite from '@/components/construction-site/EditConstructionSite.vue'
-import DeleteConstructionSite from '@/components/construction-site/DeleteConstructionSite.vue' // Corrected import
 import SiteWorkTasks from '@/components/construction-site/SiteWorkTasks.vue'
 import ViewWorkTasks from '@/components/work-task/ViewWorkTasks.vue'
 import CreateWorkTask from '@/components/work-task/CreateWorkTask.vue'
 import EditWorkTask from '@/components/work-task/EditWorkTask.vue'
-import DeleteWorkTask from '@/components/work-task/DeleteWorkTask.vue'
 import EmployeeWorkTasks from '@/components/work-task/EmployeeWorkTasks.vue'
+import ViewAssignedSites from '@/components/construction-site/ViewAssignedSites.vue'
 
 export default defineComponent({
   name: 'Dashboard',
   emits: ['section-selected'],
   components: {
+    ViewAssignedSites,
     ViewEmployees,
     CreateEmployee,
     EditEmployee,
@@ -243,12 +188,10 @@ export default defineComponent({
     ViewConstructionSites,
     CreateConstructionSite,
     EditConstructionSite,
-    DeleteConstructionSite, // Corrected component name
     SiteWorkTasks,
     ViewWorkTasks,
     CreateWorkTask,
     EditWorkTask,
-    DeleteWorkTask,
     EmployeeWorkTasks,
   },
   setup() {
@@ -299,10 +242,9 @@ export default defineComponent({
       | 'manageOwnTasks'
 
     const hasPermission = (permission: Permission): boolean => {
-      const user = computed(() => userStore.user).value // Access user reactively
-      if (!user || !user.role) return false // Ensure user and role are defined
+      const user = computed(() => userStore.user).value
+      if (!user || !user.role) return false
 
-      // Role-based permissions
       const rolePermissions: Record<string, Permission[]> = {
         admin: [
           'viewOwnProfile',
@@ -312,28 +254,18 @@ export default defineComponent({
           'manageOwnSites',
           'viewOwnTasks',
         ],
-        manager: ['viewOwnProfile', 'viewTeam', 'manageOwnSites', 'viewOwnTasks', 'manageOwnTasks'],
+        manager: [
+          'viewOwnProfile',
+          'viewTeam',
+          'manageOwnSites',
+          'viewOwnTasks',
+          'manageOwnTasks',
+          'viewAssignedSites'
+        ],
         employee: ['viewOwnProfile', 'viewOwnTasks', 'viewAssignedSites'],
       }
 
-      if (rolePermissions[user.role] && rolePermissions[user.role].includes(permission)) {
-        return true
-      }
-
-      // // Special permissions
-      // const specialPermissions: Record<Permission, boolean> = {
-      //   manageEmployees: user.role === 'admin',
-      //   manageSites: user.role === 'admin',
-      //   manageAllTasks: user.role === 'admin',
-      //   manageOwnTasks: user.role === 'manager',
-      //   viewTeam: user.role === 'manager',
-      //   manageOwnSites: user.role === 'admin' || user.role === 'manager',
-      //   viewOwnTasks: true, // All users can view their own tasks
-      //   viewOwnProfile: true, //all users can view their own profile.
-      //   viewAssignedSites: user.role === 'employee',
-      // }
-      //
-      // return specialPermissions[permission] || false
+      return rolePermissions[user.role]?.includes(permission) ?? false
     }
 
     onMounted(() => {
@@ -377,10 +309,9 @@ export default defineComponent({
 }
 
 .content-wrapper {
-  /* New wrapper styles */
   display: flex;
-  flex: 1; /* Allow it to take up remaining space */
-  flex-direction: row; /* Arrange sidebar and main content in a row */
+  flex: 1;
+  flex-direction: row;
 }
 
 .sidebar {
@@ -389,7 +320,6 @@ export default defineComponent({
   background-color: var(--primary-bg);
   padding: 1rem;
   width: 200px;
-  /* height: 100%;  Remove the fixed height */
 }
 
 .sidebar-option {

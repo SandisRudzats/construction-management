@@ -60,7 +60,6 @@ interface Employee {
   updated_at: string;
 }
 
-// Define a Pinia store for employees
 export const useEmployeeStore = defineStore('employee', {
   state: () => ({
     employees: [] as Employee[],
@@ -68,6 +67,9 @@ export const useEmployeeStore = defineStore('employee', {
     error: null as string | null,
   }),
   actions: {
+    // todo:: error handlings
+    // todo:: ja paliek laiks - iedod visu info no backenda
+    // un tad šis viss ir pieejams no use store
     async fetchEmployees() {
       this.loading = true;
       this.error = null;
@@ -90,15 +92,12 @@ export const useEmployeeStore = defineStore('employee', {
 export default defineComponent({
   name: 'ViewEmployeesView',
   setup() {
-    // Use the employee store
     const employeeStore = useEmployeeStore();
 
     onMounted(() => {
-      // Fetch employees when the component is mounted
       employeeStore.fetchEmployees();
     });
 
-    // Access state from the store
     const { employees, loading, error } = employeeStore;
 
     return {
@@ -107,7 +106,7 @@ export default defineComponent({
       error,
     };
   },
-  pinia: createPinia(), // Add this line to make Pinia available in the component
+  pinia: createPinia()
 });
 </script>
 

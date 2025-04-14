@@ -16,8 +16,6 @@ use yii\db\ActiveRecord;
  * @property string $location
  * @property float $area
  * @property int $required_access_level
- * @property ?string $start_date
- * @property ?string $end_date
  * @property ?string $created_at
  * @property ?string $updated_at
  *
@@ -36,10 +34,11 @@ class ConstructionSite extends ActiveRecord
     public function rules(): array
     {
         return [
-            [['manager_id', 'location', 'name', 'area', 'required_access_level', 'start_date', 'end_date'], 'required'],
-            [['location', 'required_access_level'], 'string', 'max' => 255],
+            [['manager_id', 'location', 'name', 'area', 'required_access_level'], 'required'],
+            [['location'], 'string', 'max' => 255],
+            [['required_access_level'], 'integer'],
             [['area'], 'number'],
-            [['required_access_level'], 'in', 'range' => ['low', 'medium', 'high']],
+            [['required_access_level'], 'in', 'range' => ['1', '2', '3', '4', '5']],
         ];
     }
 
@@ -52,8 +51,6 @@ class ConstructionSite extends ActiveRecord
             'location' => 'Location',
             'area' => 'Area',
             'required_access_level' => 'Required Access Level',
-            'start_date' => 'Start Date',
-            'end_date' => 'End Date',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
         ];

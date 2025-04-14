@@ -7,6 +7,7 @@ namespace api\modules\Employee\controllers\v1;
 use api\modules\Employee\models\Employee;
 use Yii;
 use yii\base\Exception;
+use yii\data\ActiveDataProvider;
 use yii\rest\ActiveController;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -18,6 +19,7 @@ class EmployeeController extends ActiveController
 {
     public $modelClass = Employee::class;
 
+    // todo:: nočekot vai es nevaru pāriet uz Yii::$app->getRequest()->getBodyParams()
     public function behaviors(): array
     {
         $behaviors = parent::behaviors();
@@ -30,6 +32,7 @@ class EmployeeController extends ActiveController
                 'update' => ['PUT', 'PATCH'],
                 'delete' => ['DELETE'],
                 'view-self' => ['GET'],
+                'active-employees' => ['GET'], //added
             ],
         ];
 
@@ -205,5 +208,18 @@ class EmployeeController extends ActiveController
 
         // Return the employee data.
         return $employee->toArray();
+    }
+
+    /**
+     * Returns only employees with active status (status = 1 or status = true).
+     * @return ActiveDataProvider
+     */
+    public function actionActiveEmployees()
+    {
+        $query = Employee::find()->where(['active' => true]);
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+        ]);
+        return $dataProvider;
     }
 }

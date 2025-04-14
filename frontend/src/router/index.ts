@@ -6,7 +6,6 @@ import Dashboard from '@/views/Dashboard.vue';
 
 // Construction Site Components
 import CreateConstructionSite from '@/components/construction-site/CreateConstructionSite.vue';
-import DeleteConstructionSite from '@/components/construction-site/DeleteConstructionSite.vue';
 import EditConstructionSite from '@/components/construction-site/EditConstructionSite.vue';
 import SiteWorkTasks from '@/components/construction-site/SiteWorkTasks.vue';
 import ViewConstructionSites from '@/components/construction-site/ViewConstructionSites.vue';
@@ -20,7 +19,6 @@ import ViewEmployees from '@/components/employee/ViewEmployees.vue';
 
 // Work Task Components
 import CreateWorkTask from '@/components/work-task/CreateWorkTask.vue';
-import DeleteWorkTask from '@/components/work-task/DeleteWorkTask.vue';
 import EditWorkTask from '@/components/work-task/EditWorkTask.vue';
 import EmployeeWorkTasks from '@/components/work-task/EmployeeWorkTasks.vue';
 import ViewWorkTasks from '@/components/work-task/ViewWorkTasks.vue';
@@ -42,6 +40,7 @@ const routes: RouteRecordRaw[] = [
     redirect: '/dashboard',
   },
   // Employee Routes
+  // todo:: apskatīties vai man tos routes vispār vajag
   {
     path: '/employees',
     name: 'Employees',
@@ -86,12 +85,6 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
-    path: '/construction-sites/delete/:id',
-    name: 'DeleteConstructionSite',
-    component: DeleteConstructionSite,
-    meta: { requiresAuth: true },
-  },
-  {
     path: '/construction-sites/edit/:id',
     name: 'EditConstructionSite',
     component: EditConstructionSite,
@@ -114,12 +107,6 @@ const routes: RouteRecordRaw[] = [
     path: '/work-tasks/create',
     name: 'CreateWorkTask',
     component: CreateWorkTask,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/work-tasks/delete/:id',
-    name: 'DeleteWorkTask',
-    component: DeleteWorkTask,
     meta: { requiresAuth: true },
   },
   {

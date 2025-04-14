@@ -15,8 +15,9 @@ use yii\db\ActiveRecord;
  * @property int $employee_id
  * @property string $start_date
  * @property string $end_date
- * @property string|null $created_at
- * @property string|null $updated_at
+ * @property ?string $description
+ * @property ?string $created_at
+ * @property ?string $updated_at
  *
  * @property-read Employee $employee
  * @property-read ConstructionSite $construction-site
@@ -50,6 +51,7 @@ class WorkTask extends ActiveRecord
                 'targetClass' => ConstructionSite::class,
                 'targetAttribute' => ['construction_site_id' => 'id']
             ],
+            [['description'], 'string' , 'max' => 255],
         ];
     }
 

@@ -135,23 +135,31 @@ return [
                 'auth/logout' => 'auth/logout',
                 'v1/construction-site' => 'construction-site/construction-site/',
                 'v1/employee/create' => 'employee/employee/create',
+                'v1/construction-site/create' => 'construction-site/construction-site/create',
                 'v1/employee/' => 'employee/employee/',
                 'v1/access-pass' => 'access-pass/access-pass/',
                 'v1/work-task' => 'work-task/work-task/',
 //                'PUT v1/employee/{id}' => 'v1/employee/update/{id}',
                 'PUT v1/employee/<id:\d+>' => 'employee/employee/update',
                 'GET v1/employee/me' => 'employee/employee/view-self',
-
-                [
-                    'pattern' => 'employee/profile',
-                    'route' => 'employee/employee/view-self',
-                    'verb' => 'GET',
-                ],
-                [
-                    'class' => 'yii\rest\UrlRule',
-                    'controller' => ['employee/employee'],
-                    'pluralize' => false, // optional: if your controller is not plural
-                ],
+                'GET v1/employee/active-employees' => 'employee/employee/active-employees',
+                'DELETE v1/construction-site/<id:\d+>' => 'construction-site/construction-site/delete',
+                'PUT v1/construction-site/<id:\d+>' => 'construction-site/construction-site/update',
+                'GET v1/construction-site/<id:\d+>/work-tasks' => 'construction-site/construction-site/work-tasks',
+                'PUT v1/work-task/<id:\d+>' => 'work-task/work-task/update',
+                'GET v1/work-task/employee' => 'work-task/work-task/employee',
+                'DELETE v1/work-task/<id:\d+>' => 'work-task/work-task/delete',
+                'POST v1/work-task/create' => 'work-task/work-task/create',
+//                [
+//                    'pattern' => 'employee/profile',
+//                    'route' => 'employee/employee/view-self',
+//                    'verb' => 'GET',
+//                ],
+//                [
+//                    'class' => 'yii\rest\UrlRule',
+//                    'controller' => ['employee/employee'],
+//                    'pluralize' => false, // optional: if your controller is not plural
+//                ],
 //                [
 //                    'pattern' => 'v1/employee/{id}',
 //                    'route' => 'employee/employee/update', // Corrected route
