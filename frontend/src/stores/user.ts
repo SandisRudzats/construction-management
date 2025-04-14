@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import api from "@/services/api.ts";
 
 interface UserState {
   id: number | null;
@@ -82,6 +83,16 @@ export const useUserStore = defineStore('user', {
     hasRole(roleName: string): boolean {
       return this.roles.includes(roleName);
     },
+
+    async fetchEmployeeData() {
+      try {
+        const response = await api.get('/v1/employee')  // GET request to the /v1/employee endpoint
+        this.user = response.data  // Store the fetched data into user state
+      } catch (err) {
+        console.error('Error fetching employee data:', err)  // Log error if the request fails
+      }
+    },
+
     hasPermission(permissionName: string): boolean {
       return this.permissions.includes(permissionName);
     },

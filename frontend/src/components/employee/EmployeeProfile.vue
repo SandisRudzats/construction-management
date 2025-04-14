@@ -23,7 +23,9 @@ export default defineComponent({
   name: 'EmployeeProfile',
   setup() {
     const userStore = useUserStore()
+    userStore.initializeUser()
 
+    console.log(userStore.user);
     return {
       userStore,
     }

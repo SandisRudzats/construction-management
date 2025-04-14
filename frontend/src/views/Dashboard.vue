@@ -96,9 +96,6 @@
           <h1>Welcome to the dashboard!</h1>
           <p>This is the construction management system for employees and managers.</p>
         </div>
-        <div v-else-if="selectedSection === 'employees'">
-          <ViewEmployees />
-        </div>
         <div v-else-if="selectedSection === 'create-employee'">
           <CreateEmployee />
         </div>
@@ -117,24 +114,6 @@
         <div v-else-if="selectedSection === 'create-construction-site'">
           <CreateConstructionSite />
         </div>
-        <div v-else-if="selectedSection === 'edit-construction-site'">
-          <EditConstructionSite />
-        </div>
-        <div v-else-if="selectedSection === 'view-site-work-tasks'">
-          <SiteWorkTasks />
-        </div>
-        <div v-else-if="selectedSection === 'work-tasks'">
-          <ViewWorkTasks />
-        </div>
-        <div v-else-if="selectedSection === 'create-work-task'">
-          <CreateWorkTask />
-        </div>
-        <div v-else-if="selectedSection === 'edit-work-task'">
-          <EditWorkTask />
-        </div>
-        <div v-else-if="selectedSection === 'view-employee-work-tasks'">
-          <EmployeeWorkTasks />
-        </div>
         <div v-else>
           <h1>Welcome to the dashboard!</h1>
           <p>Select a section from the sidebar to view its content.</p>
@@ -150,18 +129,11 @@ import { useRouter } from 'vue-router'
 import api from '@/services/api'
 import { useUserStore } from '@/stores/user'
 // Import the components
-import ViewEmployees from '@/components/employee/ViewEmployees.vue'
 import CreateEmployee from '@/components/employee/CreateEmployee.vue'
 import EditEmployee from '@/components/employee/EditEmployee.vue'
 import EmployeeProfile from '@/components/employee/EmployeeProfile.vue'
 import ViewConstructionSites from '@/components/construction-site/ViewConstructionSites.vue'
 import CreateConstructionSite from '@/components/construction-site/CreateConstructionSite.vue'
-import EditConstructionSite from '@/components/construction-site/EditConstructionSite.vue'
-import SiteWorkTasks from '@/components/construction-site/SiteWorkTasks.vue'
-import ViewWorkTasks from '@/components/work-task/ViewWorkTasks.vue'
-import CreateWorkTask from '@/components/work-task/CreateWorkTask.vue'
-import EditWorkTask from '@/components/work-task/EditWorkTask.vue'
-import EmployeeWorkTasks from '@/components/work-task/EmployeeWorkTasks.vue'
 import ViewAssignedSites from '@/components/construction-site/ViewAssignedSites.vue'
 
 export default defineComponent({
@@ -169,18 +141,11 @@ export default defineComponent({
   emits: ['section-selected'],
   components: {
     ViewAssignedSites,
-    ViewEmployees,
     CreateEmployee,
     EditEmployee,
     EmployeeProfile,
     ViewConstructionSites,
     CreateConstructionSite,
-    EditConstructionSite,
-    SiteWorkTasks,
-    ViewWorkTasks,
-    CreateWorkTask,
-    EditWorkTask,
-    EmployeeWorkTasks,
   },
   setup() {
     const router = useRouter()

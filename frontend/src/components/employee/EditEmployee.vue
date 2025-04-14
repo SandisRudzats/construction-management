@@ -6,50 +6,59 @@
     <div v-if="employees && employees.length > 0" class="employee-list">
       <table class="employee-table">
         <thead>
-          <tr>
-            <th>ID</th>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Birth Date</th>
-            <th>Username</th>
-            <th>Role</th>
-            <th>Access Level</th>
-            <th>Manager ID</th>
-            <th>Active</th>
-            <th>Actions</th>
-          </tr>
+        <tr>
+          <th>ID</th>
+          <th>First Name</th>
+          <th>Last Name</th>
+          <th>Birth Date</th>
+          <th>Username</th>
+          <th>Role</th>
+          <th>Access Level</th>
+          <th>Manager</th>
+          <th>Active</th>
+          <th>Actions</th>
+        </tr>
         </thead>
         <tbody>
-          <tr v-for="employee in employees" :key="employee.id">
-            <td>{{ employee.id }}</td>
-            <td>
-              <input v-model="employee.first_name" type="text" />
-            </td>
-            <td>
-              <input v-model="employee.last_name" type="text" />
-            </td>
-            <td>
-              <input v-model="employee.birth_date" type="date" />
-            </td>
-            <td>
-              <input v-model="employee.username" type="text" />
-            </td>
-            <td>
-              <input v-model="employee.role" type="text" />
-            </td>
-            <td>
-              <input v-model="employee.access_level" type="number" />
-            </td>
-            <td>
-              <input v-model="employee.manager_id" type="number" />
-            </td>
-            <td>
-              <input v-model="employee.active" type="checkbox" />
-            </td>
-            <td>
-              <button @click="updateEmployee(employee.id)" class="update-button">Update</button>
-            </td>
-          </tr>
+        <tr v-for="employee in employees" :key="employee.id">
+          <td>{{ employee.id }}</td>
+          <td>
+            <input v-model="employee.first_name" type="text" />
+          </td>
+          <td>
+            <input v-model="employee.last_name" type="text" />
+          </td>
+          <td>
+            <input v-model="employee.birth_date" type="date" />
+          </td>
+          <td>
+            <input v-model="employee.username" type="text" />
+          </td>
+          <td>
+            <select v-model="employee.role">
+              <option value="admin">Admin</option>
+              <option value="manager">Manager</option>
+              <option value="employee">Employee</option>
+            </select>
+          </td>
+          <td>
+            <input v-model="employee.access_level" type="number" />
+          </td>
+          <td>
+            <select v-model="employee.manager_id">
+              <option value="">Select Manager</option>
+              <option v-for="manager in managers" :key="manager.id" :value="manager.id">
+                {{ manager.first_name }} {{ manager.last_name }}
+              </option>
+            </select>
+          </td>
+          <td>
+            <input v-model="employee.active" type="checkbox" />
+          </td>
+          <td>
+            <button @click="updateEmployee(employee.id, employee)" class="update-button">Update</button>
+          </td>
+        </tr>
         </tbody>
       </table>
     </div>
@@ -58,93 +67,56 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue'
-import api from '@/services/api'
-
-interface Employee {
-  id: number
-  first_name: string
-  last_name: string
-  birth_date: string | null
-  username: string
-  password_hash: string | null // Note:  We don't обычно edit this directly
-  access_level: number
-  manager_id: number
-  role: string
-  active: boolean
-  created_at: string | null
-  updated_at: string | null
-}
+import { defineComponent, onMounted, computed } from 'vue'
+import { useEmployeeStore } from '@/stores/employee.ts'
+import { useUserStore } from '@/stores/user.ts'
+import type { Employee } from '@/stores/employee.ts'
 
 export default defineComponent({
   name: 'EditEmployeesView',
   setup() {
-    const employees = ref<Employee[]>([])
-    const loading = ref(false)
-    const error = ref<string | null>(null)
+    const employeeStore = useEmployeeStore()
+    const userStore = useUserStore()
 
-    const fetchEmployees = async () => {
-      loading.value = true
-      error.value = null
-      try {
-        const response = await api.get('v1/employee')
-        if (response.status === 200) {
-          employees.value = response.data
-        } else {
-          error.value = 'Failed to fetch employees.'
-        }
-      } catch (err: any) {
-        error.value = err.message || 'An error occurred.'
-      } finally {
-        loading.value = false
+    // Fetch employees when the component is mounted
+    onMounted(async () => {
+      if (!employeeStore.hasFetched) {
+        await employeeStore.fetchEmployees()
       }
-    }
-
-    const updateEmployee = async (id: number) => {
-      const employeeToUpdate = employees.value.find((emp) => emp.id === id)
-      if (!employeeToUpdate) {
-        console.error('Employee to update not found:', id)
-        return
-      }
-
-      try {
-        //  Don't send password_hash
-        const { ...dataToUpdate } = employeeToUpdate
-
-        const response = await api.put(`v1/employee/${id}`, dataToUpdate)
-        if (response.status === 200) {
-          const updatedEmployeeData = response.data
-          const index = employees.value.findIndex((e) => e.id === id)
-          if (index !== -1) {
-            employees.value[index] = {
-              ...employees.value[index],
-              ...updatedEmployeeData,
-            }
-          }
-          console.log('Employee updated successfully:', response.data)
-        } else {
-          error.value = 'Failed to update employee.'
-          console.error('Failed to update employee:', response.data)
-        }
-      } catch (err: any) {
-        const errors = err.response?.data?.errors
-
-        if (errors) {
-          error.value = Object.entries(errors)
-            .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
-            .join('\n') ?? ['An error occurred.']
-        }
-      }
-    }
-
-    onMounted(() => {
-      fetchEmployees('any')
     })
+
+    const employees = computed(() => {
+      const user = userStore.user
+      // If the user is a manager, filter employees based on their manager_id
+      if (user?.role === 'manager' && user.id !== null) {
+        return employeeStore.getEmployeesByManagerId(user.id)
+      }
+      // Otherwise return all employees
+      return employeeStore.employees
+    })
+
+    const { loading, error } = employeeStore
+
+    // Managers are those with the "manager" role
+    const managers = computed(() => {
+      return employeeStore.getEmployeesByRole('manager')
+    })
+
+    // Refactor updateEmployee to use store's updateEmployee method
+    const updateEmployee = async (id: number, updatedData: Employee) => {
+      try {
+        await employeeStore.updateEmployee(id, updatedData)
+        console.log('Employee updated successfully.')
+      } catch (err) {
+        console.error('Failed to update employee:', err)
+      }
+    }
 
     return {
       employees,
       loading,
       error,
+      managers,
       updateEmployee,
     }
   },

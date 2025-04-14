@@ -9,6 +9,7 @@ export interface Employee {
   username: string
   manager_id: number
   role: string
+  active: boolean
   access_level: number
   created_at: string
   updated_at: string
@@ -90,6 +91,36 @@ export const useEmployeeStore = defineStore('employee', {
       }
     },
 
+    async updateEmployee(id: number, updatedData: Employee) {
+      this.loading = true
+      this.error = null
+      try {
+        const response = await api.put(`v1/employee/${id}`, updatedData)
+        if (response.status === 200) {
+          const index = this.employees.findIndex((e) => e.id === id)
+          if (index !== -1) {
+            this.employees[index] = {
+              ...this.employees[index],
+              ...response.data,
+            }
+          }
+          console.log('Employee updated successfully:', response.data)
+        } else {
+          this.error = 'Failed to update employee.'
+          console.error('Failed to update employee:', response.data)
+        }
+      } catch (err: any) {
+        if (err instanceof Error) {
+          this.error = err.message
+        } else {
+          this.error = 'An error occurred while updating employee.'
+        }
+        console.error(err)
+      } finally {
+        this.loading = false
+      }
+    },
+
     clearEmployees() {
       this.employees = []
       this.hasFetched = false
@@ -97,6 +128,10 @@ export const useEmployeeStore = defineStore('employee', {
 
     addEmployee(employee: Employee) {
       this.employees.push(employee)
+    },
+
+    setEmployees(employees: Employee[]) {
+      this.employees = employees
     },
   },
 })

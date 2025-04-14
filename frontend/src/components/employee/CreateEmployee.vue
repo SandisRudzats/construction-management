@@ -130,12 +130,10 @@
 
 <script lang="ts">
 import { defineComponent, ref, reactive, onMounted, computed } from 'vue'
-import api from '@/services/api'
 import { useVuelidate } from '@vuelidate/core'
 import { required, minLength, helpers } from '@vuelidate/validators'
-import { useRouter } from 'vue-router' // Import useRouter
-import { useEmployeeStore } from '@/stores/employee'
-import type { NewEmployee } from '@/stores/employee'
+import { useRouter } from 'vue-router'
+import { type NewEmployee, useEmployeeUserStore, EmployeeUser } from '@/stores/employeeUser'
 
 // Custom validator for date format (YYYY-MM-DD)
 const dateFormat = helpers.regex(/^\d{4}-\d{2}-\d{2}$/)
@@ -157,70 +155,52 @@ export default defineComponent({
     const error = ref<string | null>(null)
     const successMessage = ref<string | null>(null)
     const isSubmitting = ref(false)
-    const router = useRouter() // Use useRouter
-    const employeeStore = useEmployeeStore()
+    const router = useRouter()
+    const employeeUserStore = useEmployeeUserStore()
 
     const rules = {
       first_name: { required },
       last_name: { required },
-      birth_date: { dateFormat }, // Use the custom validator
+      birth_date: { dateFormat },
       username: { required, minLength: minLength(4) },
       password: { required, minLength: minLength(8) },
       access_level: { required },
       role: { required },
+      manager_id: { required },
     }
 
     const v$ = useVuelidate(rules, employeeData)
 
     const handleSubmit = async () => {
-      isSubmitting.value = true
-      error.value = null
-      successMessage.value = null
-
-      const validationResult = await v$.value.$validate() // Await validation
-      if (!validationResult) {
-        isSubmitting.value = false
-        return // Stop if the form is not valid
-      }
-
       try {
-        const response = await api.post('v1/employee/create', employeeData)
-        const validStatusCodes = [200, 201]
-        if (validStatusCodes.includes(response.status)) {
-          successMessage.value = response.data.message || 'Employee created successfully!'
+        isSubmitting.value = true
+        await employeeUserStore.addEmployeeUser(employeeData as NewEmployee)
+        successMessage.value = 'Employee created successfully!'
 
-          Object.assign(employeeData, {
-            first_name: '',
-            last_name: '',
-            birth_date: '',
-            username: '',
-            password: '',
-            access_level: 1,
-            role: 'employee',
-            manager_id: null,
-          })
-
-          v$.value.$reset()
-
-          if (response.data?.id) {
-            employeeStore.addEmployee(response.data)
-          }
-        } else {
-          error.value = 'Failed to create employee.'
-        }
+        // Reset form after successful submission
+        Object.assign(employeeData, {
+          first_name: '',
+          last_name: '',
+          birth_date: '',
+          username: '',
+          password: '',
+          access_level: 1,
+          role: 'employee',
+          manager_id: null,
+        })
+        v$.value.$reset()
       } catch (err: any) {
-        error.value = err.response?.data?.message || 'An error occurred.'
+        error.value = err.message || 'An error occurred.'
       } finally {
         isSubmitting.value = false
       }
     }
 
-    const managers = computed(() => {
-      return employeeStore.getEmployees.filter((employee) => employee.role === 'manager')
-    })
+    const managers = computed(() => employeeUserStore.getManagers);
+
 
     onMounted(async () => {
-      await employeeStore.fetchEmployees()
+      await employeeUserStore.fetchAllEmployees();
     })
 
     return {
@@ -231,7 +211,6 @@ export default defineComponent({
       v$,
       isSubmitting,
       router,
-      employeeStore,
       managers,
     }
   },
