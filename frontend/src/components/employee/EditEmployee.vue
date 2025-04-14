@@ -138,7 +138,7 @@ export default defineComponent({
     }
 
     onMounted(() => {
-      fetchEmployees()
+      fetchEmployees('any')
     })
 
     return {

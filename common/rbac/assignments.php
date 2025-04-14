@@ -52,4 +52,7 @@ return [
     5 => [
         'employee',
     ],
+    6 => [
+        'manager',
+    ],
 ];

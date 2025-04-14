@@ -53,7 +53,7 @@
         </div>
         <div v-if="showConstructionSitesSection" class="sidebar-sub-options">
           <div
-            v-if="hasPermission('manageSites')"
+            v-if="hasPermission('manageSites')  || hasPermission('manageOwnSites')"
             @click.stop="handleSectionSelect('construction-sites')"
             class="sidebar-option sub-option"
           >
@@ -260,7 +260,6 @@ export default defineComponent({
           'manageOwnSites',
           'viewOwnTasks',
           'manageOwnTasks',
-          'viewAssignedSites'
         ],
         employee: ['viewOwnProfile', 'viewOwnTasks', 'viewAssignedSites'],
       }

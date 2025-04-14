@@ -3,6 +3,7 @@
     <h2>Create Employee</h2>
     <form @submit.prevent="handleSubmit" class="employee-form">
       <div class="form-group">
+        <label for="first_name">First Name</label>
         <input
           type="text"
           id="first_name"
@@ -16,6 +17,7 @@
         </div>
       </div>
       <div class="form-group">
+        <label for="last_name">Last Name</label>
         <input
           type="text"
           id="last_name"
@@ -29,6 +31,7 @@
         </div>
       </div>
       <div class="form-group">
+        <label for="birth_date">Birth Date</label>
         <input
           type="date"
           id="birth_date"
@@ -41,6 +44,7 @@
         </div>
       </div>
       <div class="form-group">
+        <label for="username">Username</label>
         <input
           type="text"
           id="username"
@@ -54,6 +58,7 @@
         </div>
       </div>
       <div class="form-group">
+        <label for="password">Password</label>
         <input
           type="password"
           id="password"
@@ -67,6 +72,7 @@
         </div>
       </div>
       <div class="form-group">
+        <label for="access_level">Access Level</label>
         <select
           id="access_level"
           v-model="employeeData.access_level"
@@ -87,6 +93,7 @@
         </div>
       </div>
       <div class="form-group">
+        <label for="role">Role</label>
         <select
           id="role"
           v-model="employeeData.role"
@@ -102,6 +109,24 @@
           {{ v$.role.$errors[0].$message }}
         </div>
       </div>
+      <div class="form-group">
+        <label for="manager_id">Manager</label>
+        <select
+          id="manager_id"
+          v-model="employeeData.manager_id"
+          class="form-control"
+        >
+          <option :value="null">
+            None
+          </option> <option
+          v-for="manager in managers"
+          :key="manager.id"
+          :value="manager.id"
+        >
+          {{ manager.first_name }} {{ manager.last_name }} (ID: {{ manager.id }})
+        </option>
+        </select>
+      </div>
       <div class="button-group">
         <button type="submit" class="btn-dark-gray-confirm" :disabled="isSubmitting">
           <span v-if="isSubmitting">Creating...</span>
@@ -115,11 +140,12 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive, onMounted } from 'vue';
+import { defineComponent, ref, reactive, onMounted, computed } from 'vue';
 import api from '@/services/api';
 import { useVuelidate } from '@vuelidate/core';
 import { required, minLength, helpers } from '@vuelidate/validators';
 import { useRouter } from 'vue-router'; // Import useRouter
+import { useEmployeeStore } from '@/stores/employee';
 
 // Custom validator for date format (YYYY-MM-DD)
 const dateFormat = helpers.regex(/^\d{4}-\d{2}-\d{2}$/);
@@ -132,6 +158,7 @@ interface EmployeeData {
   password: string;
   access_level: number | null;
   role: string;
+  manager_id: number | null;
 }
 
 export default defineComponent({
@@ -145,12 +172,14 @@ export default defineComponent({
       password: '',
       access_level: 1, // Default access level
       role: 'employee',
+      manager_id: null,
     });
 
     const error = ref<string | null>(null);
     const successMessage = ref<string | null>(null);
     const isSubmitting = ref(false);
     const router = useRouter(); // Use useRouter
+    const employeeStore = useEmployeeStore();
 
     const rules = {
       first_name: { required },
@@ -177,7 +206,7 @@ export default defineComponent({
 
       try {
         const response = await api.post('v1/employee/create', employeeData);
-        const validStatusCodes = [200,201];
+        const validStatusCodes = [200, 201];
         if (validStatusCodes.includes(response.status)) {
           successMessage.value =
             response.data.message || 'Employee created successfully!';
@@ -188,6 +217,7 @@ export default defineComponent({
           employeeData.password = '';
           employeeData.access_level = 1;
           employeeData.role = 'employee';
+          employeeData.manager_id = null;
           v$.value.$reset();
           // Redirect to the employees list page after successful creation
           // await router.push('/employees');
@@ -201,6 +231,16 @@ export default defineComponent({
       }
     };
 
+    const managers = computed(() => {
+      return employeeStore.getEmployees.filter(
+        (employee) => employee.role === 'manager',
+      );
+    });
+
+    onMounted(async () => {
+      await employeeStore.fetchEmployees();
+    });
+
     return {
       employeeData,
       error,
@@ -208,7 +248,9 @@ export default defineComponent({
       successMessage,
       v$,
       isSubmitting,
-      router
+      router,
+      employeeStore,
+      managers,
     };
   },
 });

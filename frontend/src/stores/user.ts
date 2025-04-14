@@ -5,7 +5,11 @@ interface UserState {
   username: string | null;
   firstName: string | null;
   lastName: string | null;
+  active: boolean | null;
   role: string | null;
+  birthDate: string | null;
+  managerId: number | null;
+  createdAt: string | null;
   roles: string[];
   permissions: string[];
 }
@@ -16,7 +20,11 @@ export const useUserStore = defineStore('user', {
     username: null,
     firstName: null,
     lastName: null,
+    active: null,
     role: null,
+    birthDate: null,
+    managerId: null,
+    createdAt: null,
     roles: [],
     permissions: [],
   }),
@@ -26,7 +34,11 @@ export const useUserStore = defineStore('user', {
       username: string;
       firstName: string;
       lastName: string;
+      active: boolean;
       role: string;
+      birthDate: string;
+      managerId: number;
+      createdAt: string;
       roles: string[];
       permissions: string[];
     } | null) { // Allow null for logout
@@ -34,7 +46,11 @@ export const useUserStore = defineStore('user', {
       this.username = userData?.username || null;
       this.firstName = userData?.firstName || null;
       this.lastName = userData?.lastName || null;
+      this.active = userData?.active || null;
       this.role = userData?.role || null;
+      this.birthDate = userData?.birthDate || null;
+      this.managerId = userData?.managerId || null;
+      this.createdAt = userData?.createdAt || null;
       this.roles = userData?.roles || [];
       this.permissions = userData?.permissions || [];
     },
@@ -44,6 +60,9 @@ export const useUserStore = defineStore('user', {
       this.firstName = null;
       this.lastName = null;
       this.role = null;
+      this.birthDate = null;
+      this.managerId = null;
+      this.createdAt = null;
       this.roles = [];
       this.permissions = [];
     },
@@ -73,7 +92,11 @@ export const useUserStore = defineStore('user', {
       username: state.username,
       firstName: state.firstName,
       lastName: state.lastName,
+      active: state.active,
       role: state.role,
+      birthDate: state.birthDate,
+      managerId: state.managerId,
+      createdAt: state.createdAt,
       roles: state.roles,
       permissions: state.permissions
     }),

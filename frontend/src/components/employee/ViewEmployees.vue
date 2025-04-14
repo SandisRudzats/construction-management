@@ -6,108 +6,91 @@
     <div v-if="employees && employees.length > 0" class="employee-list">
       <table class="employee-table">
         <thead>
-        <tr>
-          <th>ID</th>
-          <th>First Name</th>
-          <th>Last Name</th>
-          <th>Birth Date</th>
-          <th>Username</th>
-          <th>Role</th>
-          <th>Access Level</th>
-          <th>Manager ID</th>
-          <th>Created At</th>
-          <th>Updated At</th>
-        </tr>
+          <tr>
+            <th>ID</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Birth Date</th>
+            <th>Username</th>
+            <th>Role</th>
+            <th>Access Level</th>
+            <th>Manager ID</th>
+            <th>Created At</th>
+            <th>Updated At</th>
+          </tr>
         </thead>
         <tbody>
-        <tr v-for="employee in employees" :key="employee.id">
-          <td>{{ employee.id }}</td>
-          <td>{{ employee.first_name }}</td>
-          <td>{{ employee.last_name }}</td>
-          <td>{{ employee.birth_date || 'Not set' }}</td>
-          <td>{{ employee.username }}</td>
-          <td>{{ employee.role }}</td>
-          <td>{{ employee.access_level }}</td>
-          <td>{{ employee.manager_id || 'Not set' }}</td>
-          <td>{{ employee.created_at }}</td>
-          <td>{{ employee.updated_at }}</td>
-        </tr>
+          <tr v-for="employee in employees" :key="employee.id">
+            <td>{{ employee.id }}</td>
+            <td>{{ employee.first_name }}</td>
+            <td>{{ employee.last_name }}</td>
+            <td>{{ employee.birth_date || 'Not set' }}</td>
+            <td>{{ employee.username }}</td>
+            <td>{{ employee.role }}</td>
+            <td>{{ employee.access_level }}</td>
+            <td>{{ employee.manager_id || 'Not set' }}</td>
+            <td>{{ employee.created_at }}</td>
+            <td>{{ employee.updated_at }}</td>
+          </tr>
         </tbody>
       </table>
     </div>
-    <div v-else-if="!loading && !error" class="no-employees-message">
-      No employees found.
-    </div>
+    <div v-else-if="!loading && !error" class="no-employees-message">No employees found.</div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted } from 'vue';
-import { defineStore } from 'pinia';
-import { createPinia } from 'pinia'; // Import createPinia
-import api from '@/services/api';
+import { defineComponent, onMounted } from 'vue'
+// import { defineStore } from 'pinia';
+import { createPinia } from 'pinia' // Import createPinia
+// import api from '@/services/api';
+import { useEmployeeStore } from '@/stores/employee.ts'
 
-interface Employee {
-  id: number;
-  first_name: string;
-  last_name: string;
-  birth_date: string | null;
-  username: string;
-  role: string;
-  access_level: number;
-  manager_id: number | null;
-  created_at: string;
-  updated_at: string;
-}
+// interface Employee {
+//   id: number;
+//   first_name: string;
+//   last_name: string;
+//   birth_date: string | null;
+//   username: string;
+//   role: string;
+//   access_level: number;
+//   manager_id: number | null;
+//   created_at: string;
+//   updated_at: string;
+// }
 
-export const useEmployeeStore = defineStore('employee', {
-  state: () => ({
-    employees: [] as Employee[],
-    loading: false,
-    error: null as string | null,
-  }),
-  actions: {
-    // todo:: error handlings
-    // todo:: ja paliek laiks - iedod visu info no backenda
-    // un tad šis viss ir pieejams no use store
-    async fetchEmployees() {
-      this.loading = true;
-      this.error = null;
-      try {
-        const response = await api.get('v1/employee');
-        if (response.status === 200) {
-          this.employees = response.data;
-        } else {
-          this.error = 'Failed to fetch employees.';
-        }
-      } catch (err: any) {
-        this.error = err.response?.data?.message || 'An error occurred.';
-      } finally {
-        this.loading = false;
-      }
-    },
-  },
-});
+// export const useEmployeeStore = defineStore('employee', {
+//   state: () => ({
+//     employees: [] as Employee[],
+//     loading: false,
+//     error: null as string | null,
+//   }),
+//   actions: {
+//
+//   },
+// });
 
 export default defineComponent({
   name: 'ViewEmployeesView',
   setup() {
-    const employeeStore = useEmployeeStore();
+    const employeeStore = useEmployeeStore()
 
-    onMounted(() => {
-      employeeStore.fetchEmployees();
-    });
+    onMounted(async () => {
+      if (!employeeStore.hasFetched) {
+        await employeeStore.fetchEmployees()
+      }
+    })
 
-    const { employees, loading, error } = employeeStore;
+    const { employees, loading, error } = employeeStore
 
     return {
       employees,
       loading,
       error,
-    };
+    }
   },
-  pinia: createPinia()
-});
+  pinia: createPinia(),
+})
 </script>
 
 <style scoped>
