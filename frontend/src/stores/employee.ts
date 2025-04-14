@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import api from '@/services/api'
 
-interface Employee {
+export interface Employee {
   id: number
   first_name: string
   last_name: string
@@ -12,6 +12,17 @@ interface Employee {
   access_level: number
   created_at: string
   updated_at: string
+}
+
+export interface NewEmployee {
+  first_name: string
+  last_name: string
+  birth_date: string
+  username: string
+  password: string
+  access_level: number
+  role: string
+  manager_id: number | null
 }
 
 interface EmployeeState {
@@ -35,8 +46,7 @@ export const useEmployeeStore = defineStore('employee', {
     getError: (state) => state.error,
 
     getEmployeesByRole: (state) => {
-      return (role: string) =>
-        state.employees.filter((employee) => employee.role === role)
+      return (role: string) => state.employees.filter((employee) => employee.role === role)
     },
 
     getEmployeesByAccessLevel: (state) => {
@@ -50,14 +60,11 @@ export const useEmployeeStore = defineStore('employee', {
     },
 
     getEmployeeById: (state) => {
-      return (id: number) =>
-        state.employees.find((employee) => employee.id === id) || null
+      return (id: number) => state.employees.find((employee) => employee.id === id) || null
     },
     getEmployeesByManagerAndAccess: (state) => {
       return (managerId: number, minAccess: number) =>
-        state.employees.filter(
-          (e) => e.manager_id === managerId && e.access_level >= minAccess
-        )
+        state.employees.filter((e) => e.manager_id === managerId && e.access_level >= minAccess)
     },
   },
 
@@ -70,7 +77,7 @@ export const useEmployeeStore = defineStore('employee', {
       try {
         const response = await api.get('v1/employee/active-employees')
         if (response.status === 200 && response?.data) {
-          this.employees = response.data;
+          this.employees = response.data
           this.hasFetched = true
         } else {
           this.error = 'No employees data found.'
@@ -86,6 +93,10 @@ export const useEmployeeStore = defineStore('employee', {
     clearEmployees() {
       this.employees = []
       this.hasFetched = false
-    }
+    },
+
+    addEmployee(employee: Employee) {
+      this.employees.push(employee)
+    },
   },
 })

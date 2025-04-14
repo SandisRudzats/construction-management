@@ -79,9 +79,7 @@
           required
           class="form-control select-placeholder"
         >
-          <option value="" disabled hidden>
-            Access Level
-          </option>
+          <option value="" disabled hidden>Access Level</option>
           <option :value="1">1</option>
           <option :value="2">2</option>
           <option :value="3">3</option>
@@ -111,20 +109,11 @@
       </div>
       <div class="form-group">
         <label for="manager_id">Manager</label>
-        <select
-          id="manager_id"
-          v-model="employeeData.manager_id"
-          class="form-control"
-        >
-          <option :value="null">
-            None
-          </option> <option
-          v-for="manager in managers"
-          :key="manager.id"
-          :value="manager.id"
-        >
-          {{ manager.first_name }} {{ manager.last_name }} (ID: {{ manager.id }})
-        </option>
+        <select id="manager_id" v-model="employeeData.manager_id" class="form-control">
+          <option :value="null">None</option>
+          <option v-for="manager in managers" :key="manager.id" :value="manager.id">
+            {{ manager.first_name }} {{ manager.last_name }} (ID: {{ manager.id }})
+          </option>
         </select>
       </div>
       <div class="button-group">
@@ -140,46 +129,36 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive, onMounted, computed } from 'vue';
-import api from '@/services/api';
-import { useVuelidate } from '@vuelidate/core';
-import { required, minLength, helpers } from '@vuelidate/validators';
-import { useRouter } from 'vue-router'; // Import useRouter
-import { useEmployeeStore } from '@/stores/employee';
+import { defineComponent, ref, reactive, onMounted, computed } from 'vue'
+import api from '@/services/api'
+import { useVuelidate } from '@vuelidate/core'
+import { required, minLength, helpers } from '@vuelidate/validators'
+import { useRouter } from 'vue-router' // Import useRouter
+import { useEmployeeStore } from '@/stores/employee'
+import type { NewEmployee } from '@/stores/employee'
 
 // Custom validator for date format (YYYY-MM-DD)
-const dateFormat = helpers.regex(/^\d{4}-\d{2}-\d{2}$/);
-
-interface EmployeeData {
-  first_name: string;
-  last_name: string;
-  birth_date: string;
-  username: string;
-  password: string;
-  access_level: number | null;
-  role: string;
-  manager_id: number | null;
-}
+const dateFormat = helpers.regex(/^\d{4}-\d{2}-\d{2}$/)
 
 export default defineComponent({
   name: 'CreateEmployee',
   setup() {
-    const employeeData: EmployeeData = reactive({
+    const employeeData = reactive<NewEmployee>({
       first_name: '',
       last_name: '',
       birth_date: '',
       username: '',
       password: '',
-      access_level: 1, // Default access level
+      access_level: 1,
       role: 'employee',
       manager_id: null,
-    });
+    })
 
-    const error = ref<string | null>(null);
-    const successMessage = ref<string | null>(null);
-    const isSubmitting = ref(false);
-    const router = useRouter(); // Use useRouter
-    const employeeStore = useEmployeeStore();
+    const error = ref<string | null>(null)
+    const successMessage = ref<string | null>(null)
+    const isSubmitting = ref(false)
+    const router = useRouter() // Use useRouter
+    const employeeStore = useEmployeeStore()
 
     const rules = {
       first_name: { required },
@@ -189,57 +168,61 @@ export default defineComponent({
       password: { required, minLength: minLength(8) },
       access_level: { required },
       role: { required },
-    };
+      manager_id: { required },
+    }
 
-    const v$ = useVuelidate(rules, employeeData);
+    const v$ = useVuelidate(rules, employeeData)
 
     const handleSubmit = async () => {
-      isSubmitting.value = true;
-      error.value = null;
-      successMessage.value = null;
+      isSubmitting.value = true
+      error.value = null
+      successMessage.value = null
 
-      const validationResult = await v$.value.$validate(); // Await validation
+      const validationResult = await v$.value.$validate() // Await validation
       if (!validationResult) {
-        isSubmitting.value = false;
-        return; // Stop if the form is not valid
+        isSubmitting.value = false
+        return // Stop if the form is not valid
       }
 
       try {
-        const response = await api.post('v1/employee/create', employeeData);
-        const validStatusCodes = [200, 201];
+        const response = await api.post('v1/employee/create', employeeData)
+        const validStatusCodes = [200, 201]
         if (validStatusCodes.includes(response.status)) {
-          successMessage.value =
-            response.data.message || 'Employee created successfully!';
-          employeeData.first_name = '';
-          employeeData.last_name = '';
-          employeeData.birth_date = '';
-          employeeData.username = '';
-          employeeData.password = '';
-          employeeData.access_level = 1;
-          employeeData.role = 'employee';
-          employeeData.manager_id = null;
-          v$.value.$reset();
-          // Redirect to the employees list page after successful creation
-          // await router.push('/employees');
+          successMessage.value = response.data.message || 'Employee created successfully!'
+
+          Object.assign(employeeData, {
+            first_name: '',
+            last_name: '',
+            birth_date: '',
+            username: '',
+            password: '',
+            access_level: 1,
+            role: 'employee',
+            manager_id: null,
+          })
+
+          v$.value.$reset()
+
+          if (response.data?.id) {
+            employeeStore.addEmployee(response.data)
+          }
         } else {
-          error.value = 'Failed to create employee.';
+          error.value = 'Failed to create employee.'
         }
       } catch (err: any) {
-        error.value = err.response?.data?.message || 'An error occurred.';
+        error.value = err.response?.data?.message || 'An error occurred.'
       } finally {
-        isSubmitting.value = false;
+        isSubmitting.value = false
       }
-    };
+    }
 
     const managers = computed(() => {
-      return employeeStore.getEmployees.filter(
-        (employee) => employee.role === 'manager',
-      );
-    });
+      return employeeStore.getEmployees.filter((employee) => employee.role === 'manager')
+    })
 
     onMounted(async () => {
-      await employeeStore.fetchEmployees();
-    });
+      await employeeStore.fetchEmployees()
+    })
 
     return {
       employeeData,
@@ -251,9 +234,9 @@ export default defineComponent({
       router,
       employeeStore,
       managers,
-    };
+    }
   },
-});
+})
 </script>
 
 <style scoped>
@@ -281,10 +264,10 @@ label {
   font-weight: bold;
 }
 
-input[type="text"],
-input[type="date"],
-input[type="number"],
-input[type="password"],
+input[type='text'],
+input[type='date'],
+input[type='number'],
+input[type='password'],
 select {
   width: 100%;
   padding: 0.75rem;
@@ -296,18 +279,18 @@ select {
   color: var(--input-text);
 }
 
-input[type="text"]::placeholder,
-input[type="date"]::placeholder,
-input[type="number"]::placeholder,
-input[type="password"]::placeholder,
+input[type='text']::placeholder,
+input[type='date']::placeholder,
+input[type='number']::placeholder,
+input[type='password']::placeholder,
 select::placeholder {
   color: rgba(var(--input-text-rgb), 0.6);
 }
 
-input[type="text"]:focus,
-input[type="date"]:focus,
-input[type="number"]:focus,
-input[type="password"]:focus,
+input[type='text']:focus,
+input[type='date']:focus,
+input[type='number']:focus,
+input[type='password']:focus,
 select:focus {
   outline: none;
   border-color: var(--primary);

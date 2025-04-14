@@ -19,6 +19,7 @@ class EmployeeController extends ActiveController
 {
     public $modelClass = Employee::class;
 
+    // todo:: add eager loading kur vajag
     // todo:: nočekot vai es nevaru pāriet uz Yii::$app->getRequest()->getBodyParams()
     public function behaviors(): array
     {
@@ -84,6 +85,7 @@ class EmployeeController extends ActiveController
         $employee->setPassword($data['password']); // Use setPassword for hashing.
         $employee->role = $data['role'];
         $employee->access_level = $data['access_level'] ?? 1; //default access level
+        $employee->manager_id = $data['manager_id'];
 
         // Validate the employee data.  Return a JSON response with errors if validation fails.
         if (!$employee->validate()) {

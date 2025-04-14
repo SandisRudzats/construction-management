@@ -22,6 +22,7 @@ use yii\web\IdentityInterface;
  * @property int $access_level
  * @property string $role
  * @property bool $active
+ * @property int $manager_id
  * @property string|null $created_at
  * @property string|null $updated_at
  *
@@ -29,6 +30,8 @@ use yii\web\IdentityInterface;
  * @property-read string $authKey
  * @property-read WorkTask[] $workTasks
  * @property-read AccessPass[] $accessPasses
+ * @property-read Employee|null $manager
+ * @property-read Employee[] $subordinates
  */
 class Employee extends ActiveRecord implements IdentityInterface
 {
@@ -42,7 +45,7 @@ class Employee extends ActiveRecord implements IdentityInterface
     public function rules(): array
     {
         return [
-            [['first_name', 'last_name', 'username', 'role'], 'required'],
+            [['first_name', 'last_name', 'username', 'role', 'manager_id'], 'required'],
             [['role'], 'string', 'max' => 20],
             [['first_name', 'last_name', 'username', 'password_hash'], 'string', 'max' => 255],
             [['birth_date'], 'date', 'format' => 'Y-m-d'], // Corrected date format
@@ -50,6 +53,7 @@ class Employee extends ActiveRecord implements IdentityInterface
             [['active'], 'boolean'],
             [['role'], 'in', 'range' => ['admin', 'manager', 'employee']],
             [['access_level'], 'integer', 'min' => 1, 'max' => 5],
+            [['manager_id'], 'integer']
         ];
     }
 
@@ -65,6 +69,7 @@ class Employee extends ActiveRecord implements IdentityInterface
             'access_level' => 'Access Level',
             'role' => 'Role',
             'active' => 'Active',
+            'manager_id' => 'Manager ID',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
         ];
@@ -123,4 +128,15 @@ class Employee extends ActiveRecord implements IdentityInterface
     {
         return Yii::$app->security->validatePassword($password, $this->password_hash);
     }
+
+    public function getManager(): ActiveQuery
+    {
+        return $this->hasOne(self::class, ['id' => 'manager_id']);
+    }
+
+    public function getSubordinates(): ActiveQuery
+    {
+        return $this->hasMany(self::class, ['manager_id' => 'id']);
+    }
+
 }

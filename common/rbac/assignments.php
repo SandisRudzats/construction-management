@@ -55,4 +55,22 @@ return [
     6 => [
         'manager',
     ],
+    7 => [
+        'employee',
+    ],
+    8 => [
+        'employee',
+    ],
+    9 => [
+        'employee',
+    ],
+    10 => [
+        'employee',
+    ],
+    11 => [
+        'employee',
+    ],
+    12 => [
+        'employee',
+    ],
 ];
