@@ -41,12 +41,12 @@
         </div>
 
         <div class="sidebar-option gray-button group-title" @click="toggleConstructionSitesSection">
-          Construction Sites
+          Construction Sites and Tasks
           <span :class="{ 'arrow-icon': true, open: showConstructionSitesSection }">▶</span>
         </div>
         <div v-if="showConstructionSitesSection" class="sidebar-sub-options">
           <div
-            v-if="hasPermission('manageSites')  || hasPermission('manageOwnSites')"
+            v-if="hasPermission('manageSites') || hasPermission('manageOwnSites')"
             @click.stop="handleSectionSelect('construction-sites')"
             class="sidebar-option sub-option"
           >
@@ -65,27 +65,6 @@
             class="sidebar-option sub-option"
           >
             Create Site
-          </div>
-        </div>
-
-        <div class="sidebar-option gray-button group-title" @click="toggleWorkTasksSection">
-          Work Tasks
-          <span :class="{ 'arrow-icon': true, open: showWorkTasksSection }">▶</span>
-        </div>
-        <div v-if="showWorkTasksSection" class="sidebar-sub-options">
-          <div
-            v-if="hasPermission('manageAllTasks')"
-            @click.stop="handleSectionSelect('work-tasks')"
-            class="sidebar-option sub-option"
-          >
-            View Tasks
-          </div>
-          <div
-            v-if="hasPermission('manageAllTasks')"
-            @click.stop="handleSectionSelect('create-work-task')"
-            class="sidebar-option sub-option"
-          >
-            Create Task
           </div>
         </div>
         <button class="sidebar-option gray-button" @click="handleLogout">Logout</button>
@@ -128,6 +107,7 @@ import { defineComponent, ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/services/api'
 import { useUserStore } from '@/stores/user'
+import { useEmployeeStore } from '@/stores/employee.ts'
 // Import the components
 import CreateEmployee from '@/components/employee/CreateEmployee.vue'
 import EditEmployee from '@/components/employee/EditEmployee.vue'
@@ -153,6 +133,7 @@ export default defineComponent({
     const showConstructionSitesSection = ref(false)
     const showWorkTasksSection = ref(false)
     const userStore = useUserStore()
+    const employeeStore = useEmployeeStore()
     const userRole = computed(() => userStore.user?.role || null)
     const selectedSection = ref<string>('dashboard')
 
@@ -207,13 +188,7 @@ export default defineComponent({
           'manageOwnSites',
           'viewOwnTasks',
         ],
-        manager: [
-          'viewOwnProfile',
-          'viewTeam',
-          'manageOwnSites',
-          'viewOwnTasks',
-          'manageOwnTasks',
-        ],
+        manager: ['viewOwnProfile', 'viewTeam', 'manageOwnSites', 'viewOwnTasks', 'manageOwnTasks'],
         employee: ['viewOwnProfile', 'viewOwnTasks', 'viewAssignedSites'],
       }
 
@@ -222,6 +197,7 @@ export default defineComponent({
 
     onMounted(() => {
       userStore.initializeUser()
+      employeeStore.fetchEmployees()
     })
 
     return {
@@ -236,6 +212,7 @@ export default defineComponent({
       showWorkTasksSection,
       toggleWorkTasksSection,
       selectedSection,
+      employeeStore
     }
   },
 })

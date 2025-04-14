@@ -67,10 +67,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, computed } from 'vue'
-import { useEmployeeStore } from '@/stores/employee.ts'
-import { useUserStore } from '@/stores/user.ts'
-import type { Employee } from '@/stores/employee.ts'
+import { defineComponent, onMounted, computed } from 'vue';
+import {useEmployeeStore} from "@/stores/employee.ts";
+import {useUserStore} from "@/stores/user.ts";
+import type {Employee} from "@/stores/employee.ts";
 
 export default defineComponent({
   name: 'EditEmployeesView',
@@ -78,7 +78,6 @@ export default defineComponent({
     const employeeStore = useEmployeeStore()
     const userStore = useUserStore()
 
-    // Fetch employees when the component is mounted
     onMounted(async () => {
       if (!employeeStore.hasFetched) {
         await employeeStore.fetchEmployees()
@@ -87,20 +86,15 @@ export default defineComponent({
 
     const employees = computed(() => {
       const user = userStore.user
-      // If the user is a manager, filter employees based on their manager_id
       if (user?.role === 'manager' && user.id !== null) {
         return employeeStore.getEmployeesByManagerId(user.id)
       }
-      // Otherwise return all employees
       return employeeStore.employees
     })
 
     const { loading, error } = employeeStore
 
-    // Managers are those with the "manager" role
-    const managers = computed(() => {
-      return employeeStore.getEmployeesByRole('manager')
-    })
+    const managers = computed(() => employeeStore.getManagers);
 
     // Refactor updateEmployee to use store's updateEmployee method
     const updateEmployee = async (id: number, updatedData: Employee) => {

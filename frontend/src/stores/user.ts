@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia';
-import api from "@/services/api.ts";
 
 interface UserState {
   id: number | null;
@@ -43,7 +42,7 @@ export const useUserStore = defineStore('user', {
       roles: string[];
       permissions: string[];
     } | null) { // Allow null for logout
-      this.id = userData?.id || null; // Use optional chaining and nullish coalescing
+      this.id = userData?.id; // Use optional chaining and nullish coalescing
       this.username = userData?.username || null;
       this.firstName = userData?.firstName || null;
       this.lastName = userData?.lastName || null;
@@ -79,18 +78,6 @@ export const useUserStore = defineStore('user', {
         }
       }
       // If no user data, do nothing.  The user is not logged in.
-    },
-    hasRole(roleName: string): boolean {
-      return this.roles.includes(roleName);
-    },
-
-    async fetchEmployeeData() {
-      try {
-        const response = await api.get('/v1/employee')  // GET request to the /v1/employee endpoint
-        this.user = response.data  // Store the fetched data into user state
-      } catch (err) {
-        console.error('Error fetching employee data:', err)  // Log error if the request fails
-      }
     },
 
     hasPermission(permissionName: string): boolean {

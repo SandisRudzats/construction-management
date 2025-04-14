@@ -48,7 +48,9 @@ class AuthController extends Controller
                         $permissions[] = $permissionName;
                     }
 
-                    $userData = $user->toArray(['id', 'username', 'first_name', 'last_name', 'role']);
+                    $userData = $user->toArray(
+                        ['id', 'username', 'first_name', 'last_name', 'role', 'manager_id', 'created_at']
+                    );
 
                     $userData['roles'] = $roleNames; // Add roles to the response
                     $userData['permissions'] = $permissions; // Add permissions

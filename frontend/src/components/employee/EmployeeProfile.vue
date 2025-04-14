@@ -1,14 +1,14 @@
 <template>
-  <div v-if="userStore.user">
+  <div v-if="employeeUser">
     <h2>Employee Details</h2>
-    <p><strong>ID:</strong> {{ userStore.user.id }}</p>
-    <p><strong>Name:</strong> {{ userStore.user.firstName }} {{ userStore.user.lastName }}</p>
-    <p><strong>Username:</strong> {{ userStore.user.username }}</p>
-    <p><strong>Role:</strong> {{ userStore.user.role }}</p>
-    <p><strong>Status:</strong> {{ userStore.user.active ? 'Active' : 'Inactive' }}</p>
-    <p><strong>Birth Date:</strong> {{ userStore.user.birthDate || 'Not Provided' }}</p>
-    <p><strong>Manager ID:</strong> {{ userStore.user.managerId }}</p>
-    <p><strong>Member Since:</strong> {{ userStore.user.createdAt }}</p>
+    <p><strong>ID:</strong> {{ employeeUser.id }}</p>
+    <p><strong>Name:</strong> {{ employeeUser.first_name }} {{ employeeUser.last_name }}</p>
+    <p><strong>Username:</strong> {{ employeeUser.username }}</p>
+    <p><strong>Role:</strong> {{ employeeUser.role }}</p>
+    <p><strong>Status:</strong> {{ employeeUser.active ? 'Active' : 'Inactive' }}</p>
+    <p><strong>Birth Date:</strong> {{ employeeUser.birth_date || 'Not Provided' }}</p>
+    <p><strong>Manager ID:</strong> {{ employeeUser.manager_id }}</p>
+    <p><strong>Member Since:</strong> {{ employeeUser.created_at }}</p>
   </div>
   <div v-else>
     <p>Loading...</p>
@@ -16,23 +16,32 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
-import { useUserStore } from '@/stores/user.ts'
+import {computed, defineComponent} from 'vue'
+import {useEmployeeStore} from "@/stores/employee.ts";
+import {useUserStore} from "@/stores/user.ts";
 
 export default defineComponent({
   name: 'EmployeeProfile',
   setup() {
+    const employeeStore = useEmployeeStore()
     const userStore = useUserStore()
-    userStore.initializeUser()
 
-    console.log(userStore.user);
+    const employeeUser = computed(() => {
+      const userId = userStore.user?.id; // Access id safely
+      if (userId) {
+        console.log(employeeStore.getEmployeeById(userId))
+        return employeeStore.getEmployeeById(userId);
+      }
+      return null;
+    });
+
+    console.log(employeeUser);
     return {
-      userStore,
+      employeeUser,
     }
   },
 })
 </script>
 
 <style scoped>
-/* ... (your existing styles) ... */
 </style>

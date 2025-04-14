@@ -132,8 +132,7 @@
 import { defineComponent, ref, reactive, onMounted, computed } from 'vue'
 import { useVuelidate } from '@vuelidate/core'
 import { required, minLength, helpers } from '@vuelidate/validators'
-import { useRouter } from 'vue-router'
-import { type NewEmployee, useEmployeeUserStore, EmployeeUser } from '@/stores/employeeUser'
+import { useEmployeeStore, type NewEmployee } from '@/stores/employee.ts'
 
 // Custom validator for date format (YYYY-MM-DD)
 const dateFormat = helpers.regex(/^\d{4}-\d{2}-\d{2}$/)
@@ -155,8 +154,7 @@ export default defineComponent({
     const error = ref<string | null>(null)
     const successMessage = ref<string | null>(null)
     const isSubmitting = ref(false)
-    const router = useRouter()
-    const employeeUserStore = useEmployeeUserStore()
+    const employeeStore = useEmployeeStore()
 
     const rules = {
       first_name: { required },
@@ -174,10 +172,9 @@ export default defineComponent({
     const handleSubmit = async () => {
       try {
         isSubmitting.value = true
-        await employeeUserStore.addEmployeeUser(employeeData as NewEmployee)
+        await employeeStore.addEmployeeUser(employeeData as NewEmployee)
         successMessage.value = 'Employee created successfully!'
 
-        // Reset form after successful submission
         Object.assign(employeeData, {
           first_name: '',
           last_name: '',
@@ -196,11 +193,12 @@ export default defineComponent({
       }
     }
 
-    const managers = computed(() => employeeUserStore.getManagers);
-
+    const managers = computed(() => employeeStore.getManagers)
 
     onMounted(async () => {
-      await employeeUserStore.fetchAllEmployees();
+      if (!employeeStore.hasFetched) {
+        await employeeStore.fetchEmployees()
+      }
     })
 
     return {
@@ -210,7 +208,6 @@ export default defineComponent({
       successMessage,
       v$,
       isSubmitting,
-      router,
       managers,
     }
   },

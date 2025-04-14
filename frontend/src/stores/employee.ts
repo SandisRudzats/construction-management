@@ -67,11 +67,12 @@ export const useEmployeeStore = defineStore('employee', {
       return (managerId: number, minAccess: number) =>
         state.employees.filter((e) => e.manager_id === managerId && e.access_level >= minAccess)
     },
+    getManagers: (state) => state.employees.filter((employee) => employee.role === 'manager'),
   },
 
   actions: {
     async fetchEmployees() {
-      if (this.hasFetched) return // Prevent redundant calls
+      if (this.hasFetched) return
 
       this.loading = true
       this.error = null
@@ -116,6 +117,19 @@ export const useEmployeeStore = defineStore('employee', {
           this.error = 'An error occurred while updating employee.'
         }
         console.error(err)
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async addEmployeeUser(newEmployeeData: NewEmployee): Promise<void> {
+      this.loading = true
+      this.error = null
+
+      try {
+        await api.post('v1/employee/create', newEmployeeData)
+      } catch (err: any) {
+        this.error = err.response?.data?.message || 'Failed to add employee.'
       } finally {
         this.loading = false
       }
