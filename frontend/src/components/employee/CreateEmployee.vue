@@ -168,7 +168,6 @@ export default defineComponent({
       password: { required, minLength: minLength(8) },
       access_level: { required },
       role: { required },
-      manager_id: { required },
     }
 
     const v$ = useVuelidate(rules, employeeData)

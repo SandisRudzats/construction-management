@@ -14,7 +14,6 @@ import ViewConstructionSites from '@/components/construction-site/ViewConstructi
 import CreateEmployee from '@/components/employee/CreateEmployee.vue';
 import EditEmployee from '@/components/employee/EditEmployee.vue';
 import EmployeeProfile from '@/components/employee/EmployeeProfile.vue';
-import ManagerSubordinates from '@/components/employee/ManagerSubordinates.vue';
 import ViewEmployees from '@/components/employee/ViewEmployees.vue';
 
 // Work Task Components
@@ -63,12 +62,6 @@ const routes: RouteRecordRaw[] = [
     path: '/employees/profile/:id',
     name: 'EmployeeProfile',
     component: EmployeeProfile,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/employees/subordinates/:id',
-    name: 'ManagerSubordinates',
-    component: ManagerSubordinates,
     meta: { requiresAuth: true },
   },
   // Construction Site Routes

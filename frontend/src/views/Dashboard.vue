@@ -25,7 +25,7 @@
             Create Employee
           </div>
           <div
-            v-if="hasPermission('manageEmployees')"
+            v-if="hasPermission('manageEmployees') || hasPermission('viewTeam')"
             @click.stop="handleSectionSelect('edit-employee')"
             class="sidebar-option sub-option"
           >
@@ -37,13 +37,6 @@
             class="sidebar-option sub-option"
           >
             My Profile
-          </div>
-          <div
-            v-if="hasPermission('viewTeam')"
-            @click.stop="handleSectionSelect('view-manager-subordinates')"
-            class="sidebar-option sub-option"
-          >
-            View Manager Subordinates
           </div>
         </div>
 
@@ -115,9 +108,6 @@
         <div v-else-if="selectedSection === 'view-employee-profile'">
           <EmployeeProfile />
         </div>
-        <div v-else-if="selectedSection === 'view-manager-subordinates'">
-          <ManagerSubordinates />
-        </div>
         <div v-else-if="selectedSection === 'construction-sites'">
           <ViewConstructionSites />
         </div>
@@ -164,7 +154,6 @@ import ViewEmployees from '@/components/employee/ViewEmployees.vue'
 import CreateEmployee from '@/components/employee/CreateEmployee.vue'
 import EditEmployee from '@/components/employee/EditEmployee.vue'
 import EmployeeProfile from '@/components/employee/EmployeeProfile.vue'
-import ManagerSubordinates from '@/components/employee/ManagerSubordinates.vue'
 import ViewConstructionSites from '@/components/construction-site/ViewConstructionSites.vue'
 import CreateConstructionSite from '@/components/construction-site/CreateConstructionSite.vue'
 import EditConstructionSite from '@/components/construction-site/EditConstructionSite.vue'
@@ -184,7 +173,6 @@ export default defineComponent({
     CreateEmployee,
     EditEmployee,
     EmployeeProfile,
-    ManagerSubordinates,
     ViewConstructionSites,
     CreateConstructionSite,
     EditConstructionSite,

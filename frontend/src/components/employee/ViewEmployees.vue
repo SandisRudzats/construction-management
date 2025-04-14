@@ -41,39 +41,15 @@
 
 <script lang="ts">
 import { defineComponent, onMounted } from 'vue'
-// import { defineStore } from 'pinia';
-import { createPinia } from 'pinia' // Import createPinia
-// import api from '@/services/api';
 import { useEmployeeStore } from '@/stores/employee.ts'
-
-// interface Employee {
-//   id: number;
-//   first_name: string;
-//   last_name: string;
-//   birth_date: string | null;
-//   username: string;
-//   role: string;
-//   access_level: number;
-//   manager_id: number | null;
-//   created_at: string;
-//   updated_at: string;
-// }
-
-// export const useEmployeeStore = defineStore('employee', {
-//   state: () => ({
-//     employees: [] as Employee[],
-//     loading: false,
-//     error: null as string | null,
-//   }),
-//   actions: {
-//
-//   },
-// });
+import { useUserStore } from '@/stores/user.ts'
+import { computed } from 'vue'
 
 export default defineComponent({
   name: 'ViewEmployeesView',
   setup() {
     const employeeStore = useEmployeeStore()
+    const userStore = useUserStore()
 
     onMounted(async () => {
       if (!employeeStore.hasFetched) {
@@ -81,15 +57,23 @@ export default defineComponent({
       }
     })
 
-    const { employees, loading, error } = employeeStore
+    const employees = computed(() => {
+      const user = userStore.user
+      if (user?.role === 'manager' && user.id !== null) {
+        return employeeStore.getEmployeesByManagerId(user.id)
+      }
+      return employeeStore.employees
+    })
+
+    const { loading, error } = employeeStore
 
     return {
       employees,
       loading,
       error,
+      userStore,
     }
   },
-  pinia: createPinia(),
 })
 </script>
 

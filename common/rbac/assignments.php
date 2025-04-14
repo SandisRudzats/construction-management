@@ -73,4 +73,13 @@ return [
     12 => [
         'employee',
     ],
+    13 => [
+        'manager',
+    ],
+    14 => [
+        'employee',
+    ],
+    15 => [
+        'employee',
+    ],
 ];
