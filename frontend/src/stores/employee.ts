@@ -9,10 +9,10 @@ export interface Employee {
   username: string
   manager_id: number
   role: string
-  active: boolean
+  active: boolean | true
   access_level: number
-  created_at: string
-  updated_at: string
+  created_at: string | null
+  updated_at: string | null
 }
 
 export interface NewEmployee {
@@ -74,14 +74,18 @@ export const useEmployeeStore = defineStore('employee', {
     async fetchEmployees() {
       if (this.hasFetched) return
 
+      console.log('this place')
       this.loading = true
       this.error = null
       try {
         const response = await api.get('v1/employee/active-employees')
+        console.log('response')
         if (response.status === 200 && response?.data) {
+          console.log('in response', response)
           this.employees = response.data
           this.hasFetched = true
         } else {
+          console.log('error')
           this.error = 'No employees data found.'
           this.hasFetched = false
         }
@@ -122,14 +126,23 @@ export const useEmployeeStore = defineStore('employee', {
       }
     },
 
-    async addEmployeeUser(newEmployeeData: NewEmployee): Promise<void> {
+    async addEmployeeUser(newEmployeeData: NewEmployee): Promise<Employee | null> {
       this.loading = true
       this.error = null
 
       try {
-        await api.post('v1/employee/create', newEmployeeData)
+        const response = await api.post('v1/employee/create', newEmployeeData)
+
+        if (response.status === 201 || response.status === 200) {
+          const createdEmployee: Employee = response.data
+          this.employees.push(createdEmployee)
+          return createdEmployee
+        }
+
+        return null
       } catch (err: any) {
         this.error = err.response?.data?.message || 'Failed to add employee.'
+        return null
       } finally {
         this.loading = false
       }

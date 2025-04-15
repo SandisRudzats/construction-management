@@ -1,70 +1,70 @@
 <template>
   <div class="view-employees-view">
     <h2>Edit Employees</h2>
+
+    <!-- Show loading indicator or error message if applicable -->
     <div v-if="loading" class="loading-indicator">Loading employees...</div>
     <div v-if="error" class="error-message">{{ error }}</div>
-    <div v-if="employees && employees.length > 0" class="employee-list">
-      <table class="employee-table">
-        <thead>
-        <tr>
-          <th>ID</th>
-          <th>First Name</th>
-          <th>Last Name</th>
-          <th>Birth Date</th>
-          <th>Username</th>
-          <th>Role</th>
-          <th>Access Level</th>
-          <th>Manager</th>
-          <th>Active</th>
-          <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr v-for="employee in employees" :key="employee.id">
-          <td>{{ employee.id }}</td>
-          <td>
-            <input v-model="employee.first_name" type="text" />
-          </td>
-          <td>
-            <input v-model="employee.last_name" type="text" />
-          </td>
-          <td>
-            <input v-model="employee.birth_date" type="date" />
-          </td>
-          <td>
-            <input v-model="employee.username" type="text" />
-          </td>
-          <td>
-            <select v-model="employee.role">
-              <option value="admin">Admin</option>
-              <option value="manager">Manager</option>
-              <option value="employee">Employee</option>
-            </select>
-          </td>
-          <td>
-            <input v-model="employee.access_level" type="number" />
-          </td>
-          <td>
-            <select v-model="employee.manager_id">
-              <option value="">Select Manager</option>
-              <option v-for="manager in managers" :key="manager.id" :value="manager.id">
-                {{ manager.first_name }} {{ manager.last_name }}
-              </option>
-            </select>
-          </td>
-          <td>
-            <input v-model="employee.active" type="checkbox" />
-          </td>
-          <td>
-            <button @click="updateEmployee(employee.id, employee)" class="update-button">Update</button>
-          </td>
-        </tr>
-        </tbody>
-      </table>
+
+    <!-- Show the employee list only for admins and managers -->
+    <div v-if="canViewEmployees">
+      <div v-if="employees && employees.length > 0" class="employee-list">
+        <table class="employee-table">
+          <thead>
+          <tr>
+            <th>ID</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Birth Date</th>
+            <th>Username</th>
+            <th>Role</th>
+            <th>Access Level</th>
+            <th>Manager</th>
+            <th>Active</th>
+            <th v-if="canEditEmployees">Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr v-for="employee in employees" :key="employee.id">
+            <td>{{ employee.id }}</td>
+            <td><input v-model="employee.first_name" type="text" :disabled="!canEditEmployees" /></td>
+            <td><input v-model="employee.last_name" type="text" :disabled="!canEditEmployees" /></td>
+            <td><input v-model="employee.birth_date" type="date" :disabled="!canEditEmployees" /></td>
+            <td><input v-model="employee.username" type="text" :disabled="!canEditEmployees" /></td>
+            <td>
+              <select v-model="employee.role" :disabled="!canEditEmployees">
+                <option value="admin">Admin</option>
+                <option value="manager">Manager</option>
+                <option value="employee">Employee</option>
+              </select>
+            </td>
+            <td><input v-model="employee.access_level" type="number" :disabled="!canEditEmployees" /></td>
+            <td>
+              <select v-model="employee.manager_id" :disabled="!canEditEmployees">
+                <option value="">Select Manager</option>
+                <option v-for="manager in managers" :key="manager.id" :value="manager.id">
+                  {{ manager.first_name }} {{ manager.last_name }}
+                </option>
+              </select>
+            </td>
+            <td><input v-model="employee.active" type="checkbox" :disabled="!canEditEmployees" /></td>
+            <td v-if="canEditEmployees">
+              <button @click="updateEmployee(employee.id, employee)" class="update-button">Update</button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+      <div v-else-if="!loading && !error" class="no-employees-message">No employees found.</div>
     </div>
-    <div v-else-if="!loading && !error" class="no-employees-message">No employees found.</div>
+
+    <!-- Message when the user doesn't have permission to view employees -->
+    <div v-else>
+      <p>You do not have permission to view employees.</p>
+    </div>
   </div>
 </template>
+
 
 <script lang="ts">
 import { defineComponent, onMounted, computed } from 'vue';
@@ -77,10 +77,12 @@ export default defineComponent({
   setup() {
     const employeeStore = useEmployeeStore()
     const userStore = useUserStore()
+    const canEditEmployees = computed(() => userStore.user?.role === 'admin');
+    const canViewEmployees = computed(() => ['admin', 'manager'].includes(userStore.user?.role));
 
-    onMounted(async () => {
+    onMounted(() => {
       if (!employeeStore.hasFetched) {
-        await employeeStore.fetchEmployees()
+        employeeStore.fetchEmployees()
       }
     })
 
@@ -106,12 +108,15 @@ export default defineComponent({
       }
     }
 
+    console.log(employees)
     return {
       employees,
       loading,
       error,
       managers,
       updateEmployee,
+      canEditEmployees,
+      canViewEmployees
     }
   },
 })

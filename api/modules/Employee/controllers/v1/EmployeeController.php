@@ -221,6 +221,7 @@ class EmployeeController extends ActiveController
         $query = Employee::find()->where(['active' => true]);
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
+            'pagination' => false
         ]);
         return $dataProvider;
     }

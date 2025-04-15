@@ -132,7 +132,7 @@
 import { defineComponent, ref, reactive, onMounted, computed } from 'vue'
 import { useVuelidate } from '@vuelidate/core'
 import { required, minLength, helpers } from '@vuelidate/validators'
-import { useEmployeeStore, type NewEmployee } from '@/stores/employee.ts'
+import { useEmployeeStore, type NewEmployee, type Employee } from '@/stores/employee.ts'
 
 // Custom validator for date format (YYYY-MM-DD)
 const dateFormat = helpers.regex(/^\d{4}-\d{2}-\d{2}$/)
@@ -185,6 +185,9 @@ export default defineComponent({
           role: 'employee',
           manager_id: null,
         })
+
+        employeeStore.hasFetched = false
+
         v$.value.$reset()
       } catch (err: any) {
         error.value = err.message || 'An error occurred.'

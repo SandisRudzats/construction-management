@@ -47,73 +47,39 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue';
-import api from '@/services/api';
+import { defineComponent, computed, onMounted } from 'vue';
+import { useConstructionSiteStore } from '@/stores/construction-site';
 import { useUserStore } from '@/stores/user';
-
-interface ConstructionSite {
-  id: number;
-  name: string;
-  manager_id: number;
-  location: string;
-  area: number;
-  required_access_level: number;
-  workTasks: WorkTask[];
-}
-
-interface WorkTask {
-  id: number;
-  employee_id: number;
-  description: string;
-  start_date: string;
-  end_date: string;
-  construction_site_id: number;
-}
 
 export default defineComponent({
   name: 'ViewAssignedSites',
   setup() {
-    const assignedSites = ref<ConstructionSite[]>([]);
-    const loading = ref(false);
-    const error = ref<string | null>(null);
+    const constructionSiteStore = useConstructionSiteStore();
     const userStore = useUserStore();
 
-    const fetchAssignedSites = async () => {
-      loading.value = true;
-      error.value = null;
-      try {
-        //  Get the employee ID from the userStore.
-        // Fetch work tasks for the logged-in employee.  Clean URL.
-        const taskResponse = await api.get(`v1/work-task/employee`);
+    const loading = computed(() => constructionSiteStore.loading);
+    const error = computed(() => constructionSiteStore.error);
 
-        const siteIds = new Set(taskResponse.data.map((task: WorkTask) => task.construction_site_id));
-
-        const sitesResponse = await api.get('v1/construction-site');
-        const allSites: ConstructionSite[] = sitesResponse.data;
-
-        assignedSites.value = allSites.filter((site) => siteIds.has(site.id));
-
-        for (const site of assignedSites.value) {
-          site.workTasks = taskResponse.data.filter(
-            (task: WorkTask) => task.construction_site_id === site.id
-          );
-        }
-      } catch (err: any) {
-        error.value = err.response?.data?.message || 'An error occurred.';
-      } finally {
-        loading.value = false;
-      }
-    };
+    const assignedSites = computed(() => {
+      // Filter sites based on the user's tasks
+      const userTasks = constructionSiteStore.constructionSites.flatMap(site =>
+        site.workTasks.filter(task => task.employee_id === userStore.user.id)
+      );
+      const siteIds = new Set(userTasks.map(task => task.construction_site_id));
+      return constructionSiteStore.constructionSites.filter(site => siteIds.has(site.id));
+    });
 
     onMounted(async () => {
-      fetchAssignedSites();
+      // Fetch construction sites and tasks when the component mounts
+      if (!constructionSiteStore.constructionSites.length) {
+        await constructionSiteStore.fetchUserAssignedSites(userStore.user);
+      }
     });
 
     return {
       assignedSites,
       loading,
       error,
-      userStore,
     };
   },
 });

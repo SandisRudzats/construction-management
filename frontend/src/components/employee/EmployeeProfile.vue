@@ -29,13 +29,11 @@ export default defineComponent({
     const employeeUser = computed(() => {
       const userId = userStore.user?.id; // Access id safely
       if (userId) {
-        console.log(employeeStore.getEmployeeById(userId))
         return employeeStore.getEmployeeById(userId);
       }
       return null;
     });
 
-    console.log(employeeUser);
     return {
       employeeUser,
     }

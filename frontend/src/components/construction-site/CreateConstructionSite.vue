@@ -16,14 +16,18 @@
         </div>
       </div>
       <div class="form-group">
-        <input
-          type="number"
+        <select
           id="manager_id"
           v-model="constructionSiteData.manager_id"
-          placeholder="Manager ID"
           required
-          class="form-control"
-        />
+          class="form-control select-placeholder"
+        >
+          <option value="null" disabled>Select Manager</option>
+          <option v-for="manager in managers" :key="manager.id" :value="manager.id">
+            <span>{{ manager.first_name }} {{ manager.last_name}}</span>
+          </option>
+          <option v-if="!managers.length" disabled>No managers available</option>
+        </select>
         <div v-if="v$.manager_id.$error" class="error-message">
           {{ v$.manager_id.$errors[0].$message }}
         </div>
@@ -61,7 +65,7 @@
           required
           class="form-control select-placeholder"
         >
-          <option value="" disabled hidden>Required Access Level</option>
+          <option value="null" disabled>Required Access Level</option>
           <option :value="1">1</option>
           <option :value="2">2</option>
           <option :value="3">3</option>
@@ -85,75 +89,84 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive } from 'vue';
-import api from '@/services/api';
-import { useVuelidate } from '@vuelidate/core';
-import { required } from '@vuelidate/validators';
-
-interface ConstructionSiteData {
-  name: string;
-  manager_id: number | null;
-  location: string;
-  area: number | null;
-  required_access_level: number | null;
-}
+import { defineComponent, ref, reactive, computed } from 'vue'
+import { useConstructionSiteStore, type ConstructionSite } from '@/stores/construction-site'
+import { useEmployeeStore } from '@/stores/employee'
+import { useVuelidate } from '@vuelidate/core'
+import { required } from '@vuelidate/validators'
 
 export default defineComponent({
   name: 'CreateConstructionSite',
   setup() {
-    const constructionSiteData: ConstructionSiteData = reactive({
+    const constructionSiteStore = useConstructionSiteStore()
+    const employeeStore = useEmployeeStore()
+
+    // Reactive data for the construction site form
+    const constructionSiteData: ConstructionSite = reactive({
+      id: 0,
       name: '',
       manager_id: null,
       location: '',
       area: null,
-      required_access_level: 1, // Default access level
-    });
+      required_access_level: null, // Default access level
+      workTasks: [],
+    })
 
-    const error = ref<string | null>(null);
-    const successMessage = ref<string | null>(null);
-    const isSubmitting = ref(false);
+    const error = ref<string | null>(null)
+    const successMessage = ref<string | null>(null)
+    const isSubmitting = ref(false)
 
+    // Validation rules
     const rules = {
       name: { required },
       manager_id: { required },
       location: { required },
       area: { required },
       required_access_level: { required },
-    };
+    }
 
-    const v$ = useVuelidate(rules, constructionSiteData);
+    const v$ = useVuelidate(rules, constructionSiteData)
 
+    const managers = computed(() => {
+      console.log('Managers loaded:', employeeStore.getManagers)
+      return employeeStore.getManagers || []
+    })
+
+    // const managers = computed(() => employeeStore.mana)
+
+    // Handle form submission
     const handleSubmit = async () => {
-      isSubmitting.value = true;
-      error.value = null;
-      successMessage.value = null;
+      isSubmitting.value = true
+      error.value = null
+      successMessage.value = null
 
-      const validationResult = await v$.value.$validate();
+      const validationResult = await v$.value.$validate()
       if (!validationResult) {
-        isSubmitting.value = false;
-        return;
+        isSubmitting.value = false
+        return
       }
 
       try {
-        const response = await api.post('v1/construction-site/create', constructionSiteData);
-        if (response.status === 201) {
-          successMessage.value = 'Construction site created successfully!';
-          constructionSiteData.name = '';
-          constructionSiteData.manager_id = null;
-          constructionSiteData.location = '';
-          constructionSiteData.area = null;
-          constructionSiteData.required_access_level = 1;
-          v$.value.$reset();
-        } else {
-          error.value = 'Failed to create construction site.';
-        }
-      } catch (err: any) {
-        error.value = err.response?.data?.message || 'An error occurred.';
-      } finally {
-        isSubmitting.value = false;
-      }
-    };
+        await constructionSiteStore.createConstructionSite(constructionSiteData)
+        successMessage.value = 'Construction site created successfully!'
 
+        Object.assign(constructionSiteData, {
+          name: '',
+          manager_id: null,
+          location: '',
+          area: null,
+          required_access_level: 1,
+        })
+
+        v$.value.$reset()
+      } catch (err: any) {
+        error.value = err.response?.data?.message || 'An error occurred.'
+      } finally {
+        isSubmitting.value = false
+      }
+    }
+
+    console.log(managers)
     return {
       constructionSiteData,
       error,
@@ -161,11 +174,12 @@ export default defineComponent({
       successMessage,
       v$,
       isSubmitting,
-    };
+      managers, // Use computed property for managers
+    }
   },
-});
+})
 </script>
 
 <style scoped>
-/* ... (your existing styles) ... */
+/* Your existing styles */
 </style>

@@ -10,9 +10,15 @@
         <h3>{{ site.name }} (ID: {{ site.id }})</h3>
 
         <div class="site-details" v-if="editingSiteId !== site.id">
-          <div class="detail-row"><strong>Manager ID:</strong> {{ site.manager_id }}</div>
-          <div class="detail-row"><strong>Location:</strong> {{ site.location }}</div>
-          <div class="detail-row"><strong>Area:</strong> {{ site.area }}</div>
+          <div class="detail-row">
+            <strong>Manager ID:</strong> {{ site.manager_id }}
+          </div>
+          <div class="detail-row">
+            <strong>Location:</strong> {{ site.location }}
+          </div>
+          <div class="detail-row">
+            <strong>Area:</strong> {{ site.area }}
+          </div>
           <div class="detail-row">
             <strong>Required Access Level:</strong> {{ site.required_access_level }}
           </div>
@@ -25,7 +31,8 @@
         </div>
         <div class="site-edit" v-else>
           <div class="detail-row">
-            <strong>Manager ID:</strong> <input type="number" v-model="editedSite.manager_id" />
+            <strong>Manager ID:</strong>
+            <input type="number" v-model="editedSite.manager_id" />
           </div>
           <div class="detail-row">
             <strong>Location:</strong> <input type="text" v-model="editedSite.location" />
@@ -87,69 +94,73 @@
 
         <table class="work-tasks-table">
           <thead>
-            <tr>
-              <th>ID</th>
-              <th>Employee</th>
-              <th>Description</th>
-              <th>Start Date</th>
-              <th>End Date</th>
-              <th>Actions</th>
-            </tr>
+          <tr>
+            <th>ID</th>
+            <th>Employee</th>
+            <th>Description</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Actions</th>
+          </tr>
           </thead>
           <tbody>
-            <tr v-for="task in site.workTasks" :key="task.id">
-              <td v-if="editingTaskId !== task.id">{{ task.id }}</td>
-              <td v-else>
-                <select v-model="editedTask.employee_id">
-                  <option
-                    v-for="employee in getFilteredEmployees(
+          <tr v-for="task in site.workTasks" :key="task.id">
+            <td v-if="editingTaskId !== task.id">{{ task.id }}</td>
+            <td v-else>
+              <select v-model="editedTask.employee_id">
+                <option
+                  v-for="employee in getFilteredEmployees(
                       site.manager_id,
                       site.required_access_level,
                     )"
-                    :key="employee.id"
-                    :value="employee.id"
-                  >
-                    {{ employee.first_name }} {{ employee.last_name }}
-                  </option>
-                  <option
-                    v-if="
-                      getFilteredEmployees(site.manager_id, site.required_access_level).length === 0
-                    "
-                    disabled
-                  >
-                    No suitable employees
-                  </option>
-                </select>
-              </td>
-              <td v-if="editingTaskId !== task.id">{{ task.description }}</td>
-              <td v-else><input type="text" v-model="editedTask.description" /></td>
-              <td v-if="editingTaskId !== task.id">{{ task.start_date }}</td>
-              <td v-else><input type="date" v-model="editedTask.start_date" /></td>
-              <td v-if="editingTaskId !== task.id">{{ task.end_date }}</td>
-              <td v-else><input type="date" v-model="editedTask.end_date" /></td>
-              <td>
-                <button
+                  :key="employee.id"
+                  :value="employee.id"
+                >
+                  {{ employee.first_name }} {{ employee.last_name }}
+                </option>
+                <option
                   v-if="
+                      getFilteredEmployees(site.manager_id, site.required_access_level)
+                        .length === 0
+                    "
+                  disabled
+                >
+                  No suitable employees
+                </option>
+              </select>
+            </td>
+            <td v-if="editingTaskId !== task.id">{{ task.description }}</td>
+            <td v-else><input type="text" v-model="editedTask.description" /></td>
+            <td v-if="editingTaskId !== task.id">{{ task.start_date }}</td>
+            <td v-else><input type="date" v-model="editedTask.start_date" /></td>
+            <td v-if="editingTaskId !== task.id">{{ task.end_date }}</td>
+            <td v-else><input type="date" v-model="editedTask.end_date" /></td>
+            <td>
+              <button
+                v-if="
                     editingTaskId !== task.id &&
                     (userStore.user.role === 'admin' || isTaskManager(site, task.employee_id))
                   "
-                  @click="editTask(task)"
-                  class="action-button"
-                >
-                  Edit
-                </button>
-                <button
-                  v-else-if="editingTaskId === task.id"
-                  @click="updateTask(site.id, task)"
-                  class="action-button save-button"
-                >
-                  Save
-                </button>
-                <button @click="deleteTask(site.id, task.id)" class="action-button delete-button">
-                  Delete Task
-                </button>
-              </td>
-            </tr>
+                @click="editTask(task)"
+                class="action-button"
+              >
+                Edit
+              </button>
+              <button
+                v-else-if="editingTaskId === task.id"
+                @click="updateTask(site.id, task)"
+                class="action-button save-button"
+              >
+                Save
+              </button>
+              <button
+                @click="deleteTask(site.id, task.id)"
+                class="action-button delete-button"
+              >
+                Delete Task
+              </button>
+            </td>
+          </tr>
           </tbody>
         </table>
       </div>
@@ -159,41 +170,27 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, reactive, computed } from 'vue'
-import api from '@/services/api'
+import { defineComponent, onMounted, reactive, computed, ref } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { useEmployeeStore } from '@/stores/employee'
-
-interface ConstructionSite {
-  id: number
-  name: string
-  manager_id: number
-  location: string
-  area: number
-  required_access_level: number
-  workTasks: WorkTask[]
-  showAddTask?: boolean
-}
-
-interface WorkTask {
-  id: number
-  employee_id: number
-  description: string
-  start_date: string
-  end_date: string
-  construction_site_id: number
-}
+import { useConstructionSiteStore, type ConstructionSite } from '@/stores/construction-site'
+import { useTaskStore, type WorkTask } from '@/stores/task'
 
 export default defineComponent({
   name: 'ViewConstructionSites',
   setup() {
-    const constructionSites = ref<ConstructionSite[]>([])
-    const loading = ref(false)
-    const error = ref<string | null>(null)
     const userStore = useUserStore()
     const employeeStore = useEmployeeStore()
+    const constructionSiteStore = useConstructionSiteStore()
+    const taskStore = useTaskStore()
+
+    // Use computed properties to access data from the store
+    const constructionSites = computed(() => constructionSiteStore.constructionSites)
+    const loading = computed(() => constructionSiteStore.loading || taskStore.loading)
+    const error = computed(() => constructionSiteStore.error || employeeStore.error)
+
     const editingSiteId = ref<number | null>(null)
-    const editedSite = reactive<ConstructionSite>({
+    const editedSite = reactive({
       id: 0,
       name: '',
       manager_id: 0,
@@ -204,7 +201,7 @@ export default defineComponent({
     })
 
     const editingTaskId = ref<number | null>(null)
-    const editedTask = reactive<WorkTask>({
+    const editedTask = reactive({
       id: 0,
       employee_id: 0,
       description: '',
@@ -213,7 +210,7 @@ export default defineComponent({
       construction_site_id: 0,
     })
 
-    const newTask = reactive<WorkTask>({
+    const newTask = reactive({
       id: 0,
       employee_id: 0,
       description: '',
@@ -222,50 +219,9 @@ export default defineComponent({
       construction_site_id: 0,
     })
 
+    // Use store actions instead of local functions
     const fetchConstructionSites = async () => {
-      loading.value = true
-      error.value = null
-
-      try {
-        let response
-        if (userStore.user.role === 'admin' || userStore.user.role === 'manager') {
-          response = await api.get('v1/construction-site')
-        } else {
-          // Fetch sites for employees, including work tasks
-          const taskResponse = await api.get('v1/work-task/my-tasks')
-          const siteIds = new Set(
-            taskResponse.data.map((task: WorkTask) => task.construction_site_id),
-          )
-
-          const sitesResponse = await api.get('v1/construction-site')
-          const allSites: ConstructionSite[] = sitesResponse.data
-
-          // Filter sites based on the employee's assigned tasks
-          constructionSites.value = allSites.filter((site) => siteIds.has(site.id))
-
-          // Populate workTasks for each site
-          for (const site of constructionSites.value) {
-            site.workTasks = taskResponse.data.filter(
-              (task) => task.construction_site_id === site.id,
-            )
-          }
-          loading.value = false
-          return // Exit early to avoid redundant site.map
-        }
-
-        constructionSites.value = response.data // Assign sites for admin/manager
-
-        // Fetch work tasks for each site.  This is done *after* fetching the sites.
-        for (const site of constructionSites.value) {
-          const taskResponse = await api.get(`v1/construction-site/${site.id}/work-tasks`)
-          site.workTasks = taskResponse.data
-          site.showAddTask = false // Initialize showAddTask
-        }
-      } catch (err: any) {
-        error.value = err.response?.data?.message || 'An error occurred.'
-      } finally {
-        loading.value = false
-      }
+      await constructionSiteStore.fetchConstructionSites(userStore.user)
     }
 
     const editSite = (site: ConstructionSite) => {
@@ -274,46 +230,20 @@ export default defineComponent({
     }
 
     const updateSite = async (site: ConstructionSite) => {
-      loading.value = true
-      error.value = null
-
-      try {
-        const response = await api.put(`v1/construction-site/${site.id}`, editedSite)
-        if (response.status === 200) {
-          await fetchConstructionSites()
-          editingSiteId.value = null
-        } else {
-          error.value = 'Failed to update construction site.'
-        }
-      } catch (err: any) {
-        error.value = err.response?.data?.message || 'An error occurred.'
-      } finally {
-        loading.value = false
+      await constructionSiteStore.updateSite(site.id, editedSite)
+      if (!constructionSiteStore.error) {
+        editingSiteId.value = null
       }
     }
 
     const deleteSite = async (id: number) => {
       if (window.confirm('Are you sure you want to delete this site?')) {
-        loading.value = true
-        error.value = null
-
-        try {
-          const response = await api.delete(`v1/construction-site/${id}`)
-          if (response.status === 204) {
-            await fetchConstructionSites()
-          } else {
-            error.value = 'Failed to delete construction site.'
-          }
-        } catch (err: any) {
-          error.value = err.response?.data?.message || 'An error occurred.'
-        } finally {
-          loading.value = false
-        }
+        await constructionSiteStore.deleteSite(id)
       }
     }
 
     const toggleAddTask = (site: ConstructionSite) => {
-      site.showAddTask = !site.showAddTask
+      constructionSiteStore.toggleAddTask(site)
       Object.assign(newTask, {
         construction_site_id: site.id,
         employee_id: 0,
@@ -324,27 +254,16 @@ export default defineComponent({
     }
 
     const addTask = async (site: ConstructionSite) => {
-      loading.value = true
-      error.value = null
       newTask.construction_site_id = site.id
-      try {
-        const response = await api.post('v1/work-task/create', newTask)
-        if (response.status === 201) {
-          await fetchConstructionSites()
-          site.showAddTask = false
-          Object.assign(newTask, {
-            employee_id: 0,
-            description: '',
-            start_date: new Date().toISOString().slice(0, 10),
-            end_date: new Date().toISOString().slice(0, 10),
-          })
-        } else {
-          error.value = 'Failed to add work task.'
-        }
-      } catch (err: any) {
-        error.value = err.response?.data?.message || 'An error occurred.'
-      } finally {
-        loading.value = false
+      await constructionSiteStore.addTask(newTask)
+      if (!constructionSiteStore.error) {
+        site.showAddTask = false
+        Object.assign(newTask, {
+          employee_id: 0,
+          description: '',
+          start_date: new Date().toISOString().slice(0, 10),
+          end_date: new Date().toISOString().slice(0, 10),
+        })
       }
     }
 
@@ -354,53 +273,25 @@ export default defineComponent({
     }
 
     const updateTask = async (siteId: number, task: WorkTask) => {
-      loading.value = true
-      error.value = null
-      try {
-        const response = await api.put(`v1/work-task/${task.id}`, editedTask)
-        if (response.status === 200) {
-          await fetchConstructionSites()
-          editingTaskId.value = null
-        } else {
-          error.value = 'Failed to update work task.'
-        }
-      } catch (err: any) {
-        error.value = err.response?.data?.message || 'An error occurred.'
-      } finally {
-        loading.value = false
+      await constructionSiteStore.updateTask(task.id, editedTask)
+      if (!constructionSiteStore.error) {
+        editingTaskId.value = null
       }
     }
 
     const deleteTask = async (siteId: number, taskId: number) => {
       if (window.confirm('Are you sure you want to delete this task?')) {
-        // added confirm
-        loading.value = true
-        error.value = null
-        try {
-          const response = await api.delete(`v1/work-task/${taskId}`)
-          if (response.status === 204) {
-            await fetchConstructionSites()
-          } else {
-            error.value = 'Failed to delete work task.'
-          }
-        } catch (err: any) {
-          error.value = err.response?.data?.message || 'An error occurred.'
-        } finally {
-          loading.value = false
-        }
+        await constructionSiteStore.deleteTask(taskId)
       }
     }
 
-    const getFilteredEmployees = (managerId: number, accessLevel: number) => {
-      if (!employeeStore.getEmployees) {
-        return []
-      }
-
-      console.log('this');
-      return employeeStore.getEmployees.filter(
-        (e) => e.manager_id === managerId && e.access_level >= accessLevel,
-      )
-    }
+    const getFilteredEmployees = computed(
+      () => (siteManagerId: number, requiredAccessLevel: number) => {
+        return employeeStore.getEmployees.filter(
+          (e) => e.manager_id === siteManagerId && e.access_level >= requiredAccessLevel,
+        )
+      },
+    )
 
     const isTaskManager = (site: ConstructionSite, employeeId: number) => {
       const employee = employeeStore.getEmployees.find((e) => e.id === employeeId)
@@ -414,11 +305,7 @@ export default defineComponent({
       if (!employeeStore.hasFetched) {
         await employeeStore.fetchEmployees()
       }
-      try {
-        await fetchConstructionSites()
-      } catch (e) {
-        console.log(e)
-      }
+      await fetchConstructionSites()
     })
 
     return {
