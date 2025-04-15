@@ -1,7 +1,6 @@
 <?php
 
 use api\controllers\AuthController;
-use api\modules\AccessPass\controllers\v1\AccessPassController;
 use api\modules\AccessPass\interfaces\AccessPassRepositoryInterface;
 use api\modules\AccessPass\interfaces\AccessPassServiceInterface;
 use api\modules\AccessPass\Module as AccessPassModule;
@@ -150,6 +149,8 @@ return [
                 'GET v1/work-task/employee' => 'work-task/work-task/employee',
                 'DELETE v1/work-task/<id:\d+>' => 'work-task/work-task/delete',
                 'POST v1/work-task/create' => 'work-task/work-task/create',
+                'POST v1/access-passes/create' => 'access-pass/access-pass/create',
+                'v1/access-pass/<action>' => 'access-pass/access-pass/<action>',
 //                [
 //                    'pattern' => 'employee/profile',
 //                    'route' => 'employee/employee/view-self',
@@ -181,10 +182,6 @@ return [
         'auth' => [
             'class' => AuthController::class,
         ],
-        'access-pass' => [
-            'class' => AccessPassController::class,
-        ],
-        // Registering controllers for version 1 of the modules
         'v1/employee' => [
             'class' => \api\modules\Employee\controllers\v1\EmployeeController::class,
         ],

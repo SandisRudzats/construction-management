@@ -175,6 +175,7 @@ import { useUserStore } from '@/stores/user'
 import { useEmployeeStore } from '@/stores/employee'
 import { useConstructionSiteStore, type ConstructionSite } from '@/stores/construction-site'
 import { useTaskStore, type WorkTask } from '@/stores/task'
+import {useAccessPassStore} from "@/stores/access-pass.ts";
 
 export default defineComponent({
   name: 'ViewConstructionSites',
@@ -183,6 +184,7 @@ export default defineComponent({
     const employeeStore = useEmployeeStore()
     const constructionSiteStore = useConstructionSiteStore()
     const taskStore = useTaskStore()
+    const accessPassStore = useAccessPassStore()
 
     // Use computed properties to access data from the store
     const constructionSites = computed(() => constructionSiteStore.constructionSites)
@@ -255,15 +257,31 @@ export default defineComponent({
 
     const addTask = async (site: ConstructionSite) => {
       newTask.construction_site_id = site.id
-      await constructionSiteStore.addTask(newTask)
-      if (!constructionSiteStore.error) {
-        site.showAddTask = false
-        Object.assign(newTask, {
-          employee_id: 0,
-          description: '',
-          start_date: new Date().toISOString().slice(0, 10),
-          end_date: new Date().toISOString().slice(0, 10),
-        })
+
+      const createdTask = await constructionSiteStore.addTask(newTask)
+
+      if (!(createdTask && createdTask.id)) return
+
+      site.showAddTask = false
+
+      Object.assign(newTask, {
+        employee_id: 0,
+        description: '',
+        start_date: new Date().toISOString().slice(0, 10),
+        end_date: new Date().toISOString().slice(0, 10),
+      })
+
+      const createdAccessPass = await accessPassStore.createAccessPass({
+        construction_site_id: site.id,
+        employee_id: createdTask.employee_id,
+        work_task_id: createdTask.id,
+        valid_from: createdTask.start_date,
+        valid_to: createdTask.end_date,
+      })
+
+      return {
+        task: createdTask,
+        accessPass: createdAccessPass,
       }
     }
 

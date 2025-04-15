@@ -7,18 +7,10 @@
       <div v-for="site in assignedSites" :key="site.id" class="site-container">
         <h3>{{ site.name }} (ID: {{ site.id }})</h3>
         <div class="site-details">
-          <div class="detail-row">
-            <strong>Manager ID:</strong> {{ site.manager_id }}
-          </div>
-          <div class="detail-row">
-            <strong>Location:</strong> {{ site.location }}
-          </div>
-          <div class="detail-row">
-            <strong>Area:</strong> {{ site.area }}
-          </div>
-          <div class="detail-row">
-            <strong>Required Access Level:</strong> {{ site.required_access_level }}
-          </div>
+          <div class="detail-row"><strong>Manager ID:</strong> {{ site.manager_id }}</div>
+          <div class="detail-row"><strong>Location:</strong> {{ site.location }}</div>
+          <div class="detail-row"><strong>Area:</strong> {{ site.area }}</div>
+          <div class="detail-row"><strong>Required Access Level:</strong> {{ site.required_access_level }}</div>
         </div>
 
         <h4>Work Tasks</h4>
@@ -29,6 +21,7 @@
             <th>Description</th>
             <th>Start Date</th>
             <th>End Date</th>
+            <th>Access Pass</th>
           </tr>
           </thead>
           <tbody>
@@ -37,6 +30,14 @@
             <td>{{ task.description }}</td>
             <td>{{ task.start_date }}</td>
             <td>{{ task.end_date }}</td>
+            <td>
+              <button @click="validateAccess(site.id, task.id)" :disabled="checkingAccess">
+                Gain Access
+              </button>
+              <span v-if="accessStatus[task.id]" :style="{ marginLeft: '10px' }">
+                  {{ accessStatus[task.id] }}
+                </span>
+            </td>
           </tr>
           </tbody>
         </table>
@@ -47,30 +48,75 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, onMounted } from 'vue';
+import { defineComponent, computed, onMounted, reactive, ref } from 'vue';
 import { useConstructionSiteStore } from '@/stores/construction-site';
 import { useUserStore } from '@/stores/user';
+import api from '@/services/api'; // Ensure you import your axios instance
+import { useAccessPassStore } from '@/stores/access-pass';
+import dayjs from 'dayjs'; // make sure dayjs is installed
+
+function formatDateTimeNow(): string {
+  const now = new Date();
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+}
 
 export default defineComponent({
   name: 'ViewAssignedSites',
   setup() {
     const constructionSiteStore = useConstructionSiteStore();
     const userStore = useUserStore();
+    const checkingAccess = ref(false);
+    const accessStatus = reactive<Record<number, string>>({});
+    const accessPassStore = useAccessPassStore();
 
     const loading = computed(() => constructionSiteStore.loading);
     const error = computed(() => constructionSiteStore.error);
 
     const assignedSites = computed(() => {
-      // Filter sites based on the user's tasks
-      const userTasks = constructionSiteStore.constructionSites.flatMap(site =>
-        site.workTasks.filter(task => task.employee_id === userStore.user.id)
-      );
-      const siteIds = new Set(userTasks.map(task => task.construction_site_id));
-      return constructionSiteStore.constructionSites.filter(site => siteIds.has(site.id));
+      return constructionSiteStore.constructionSites
+        .map(site => {
+          const filteredTasks = site.workTasks.filter(
+            task => task.employee_id === userStore.user.id
+          );
+          if (filteredTasks.length > 0) {
+            return {
+              ...site,
+              workTasks: filteredTasks,
+            };
+          }
+          return null;
+        })
+        .filter(site => site !== null);
     });
 
+    const validateAccess = async (siteId?: number | null, taskId?: number | null) => {
+      const employeeId = userStore.user?.id;
+
+      if (!employeeId || !siteId || !taskId) {
+        alert('Missing required data to validate access.');
+        return;
+      }
+
+      try {
+        const result = await accessPassStore.validateAccessPass(
+          employeeId,
+          siteId,
+          taskId,
+          dayjs().format('YYYY-MM-DD HH:mm:ss'),
+        );
+
+        if (result?.success) {
+          alert(`Access Granted! Access Pass ID: ${result.data.accessPassId}`);
+        } else {
+          alert('Access Denied');
+        }
+      } catch (err: any) {
+        alert(accessPassStore.error || 'An error occurred while validating access.');
+      }
+    };
+
     onMounted(async () => {
-      // Fetch construction sites and tasks when the component mounts
       if (!constructionSiteStore.constructionSites.length) {
         await constructionSiteStore.fetchUserAssignedSites(userStore.user);
       }
@@ -80,6 +126,9 @@ export default defineComponent({
       assignedSites,
       loading,
       error,
+      validateAccess,
+      accessStatus,
+      checkingAccess,
     };
   },
 });

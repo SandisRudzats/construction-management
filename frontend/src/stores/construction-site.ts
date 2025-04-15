@@ -106,22 +106,30 @@ export const useConstructionSiteStore = defineStore('constructionSite', {
 
       try {
         const response = await api.post('v1/work-task/create', newTask)
+
         if (response.status === 201) {
+          const createdTask: WorkTask = response.data
+
           const siteIndex = this.constructionSites.findIndex(
             (site) => site.id === newTask.construction_site_id,
           )
+
           if (siteIndex !== -1) {
-            //push new task
-            const taskResponse = await api.get(
-              `v1/construction-site/${newTask.construction_site_id}/work-tasks`,
-            )
-            this.constructionSites[siteIndex].workTasks = taskResponse.data
+            // const taskResponse = await api.get(
+            //   `v1/construction-site/${newTask.construction_site_id}/work-tasks`,
+            // )
+            // this.constructionSites[siteIndex].workTasks = taskResponse.data
+            this.constructionSites[siteIndex].workTasks.push(createdTask)
           }
+
+          return createdTask
         } else {
           this.error = 'Failed to add work task.'
+          return null
         }
       } catch (err: any) {
         this.error = err.response?.data?.message || 'An error occurred.'
+        return null
       } finally {
         this.loading = false
       }

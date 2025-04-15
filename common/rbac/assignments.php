@@ -6,6 +6,7 @@ return [
     ],
     27 => [
         'manager',
+        'employee',
     ],
     28 => [
         'employee',
