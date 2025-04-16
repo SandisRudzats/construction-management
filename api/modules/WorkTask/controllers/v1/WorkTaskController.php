@@ -64,6 +64,13 @@ class WorkTaskController extends ActiveController
         }
     }
 
+    /**
+     * @param $id
+     * @return WorkTask|array|null
+     * @throws NotFoundHttpException
+     * @throws \yii\base\InvalidConfigException
+     * @throws \yii\db\Exception
+     */
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);

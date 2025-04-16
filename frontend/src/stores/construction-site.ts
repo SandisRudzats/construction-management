@@ -141,6 +141,7 @@ export const useConstructionSiteStore = defineStore('constructionSite', {
 
       try {
         const response = await api.put(`v1/work-task/${taskId}`, updatedTask)
+
         if (response.status === 200) {
           // Find the site and update the task in its workTasks array
           this.constructionSites.forEach((site) => {
@@ -204,20 +205,20 @@ export const useConstructionSiteStore = defineStore('constructionSite', {
       }
     },
     async createConstructionSite(constructionSiteData: Omit<ConstructionSite, 'id' | 'workTasks'>) {
-      this.loading = true;
-      this.error = null;
+      this.loading = true
+      this.error = null
 
       try {
-        const response = await api.post('v1/construction-site/create', constructionSiteData);
+        const response = await api.post('v1/construction-site/create', constructionSiteData)
         if (response.status === 201) {
-          this.constructionSites.push(response.data);
+          this.constructionSites.push(response.data)
         } else {
-          this.error = 'Failed to create construction site.';
+          this.error = 'Failed to create construction site.'
         }
       } catch (err: any) {
-        this.error = err.response?.data?.message || 'An error occurred.';
+        this.error = err.response?.data?.message || 'An error occurred.'
       } finally {
-        this.loading = false;
+        this.loading = false
       }
     },
   },

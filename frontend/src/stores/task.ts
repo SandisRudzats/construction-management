@@ -54,6 +54,8 @@ export const useTaskStore = defineStore('task', {
           if (index !== -1) {
             this.tasks[index] = { ...this.tasks[index], ...response.data };
           }
+
+          return response.data
         } else {
           this.error = 'Failed to update work task.';
         }

@@ -85,7 +85,7 @@
           <EmployeeProfile />
         </div>
         <div v-else-if="selectedSection === 'construction-sites'">
-          <ViewConstructionSites />
+          <ManageConstructionSites />
         </div>
         <div v-else-if="selectedSection === 'view-assigned-sites'">
           <ViewAssignedSites />
@@ -112,7 +112,7 @@ import { useEmployeeStore } from '@/stores/employee.ts'
 import CreateEmployee from '@/components/employee/CreateEmployee.vue'
 import EditEmployee from '@/components/employee/EditEmployee.vue'
 import EmployeeProfile from '@/components/employee/EmployeeProfile.vue'
-import ViewConstructionSites from '@/components/construction-site/ViewConstructionSites.vue'
+import ManageConstructionSites from '@/components/construction-site/ManageConstructionSites.vue'
 import CreateConstructionSite from '@/components/construction-site/CreateConstructionSite.vue'
 import ViewAssignedSites from '@/components/construction-site/ViewAssignedSites.vue'
 
@@ -124,7 +124,7 @@ export default defineComponent({
     CreateEmployee,
     EditEmployee,
     EmployeeProfile,
-    ViewConstructionSites,
+    ManageConstructionSites,
     CreateConstructionSite,
   },
   setup() {

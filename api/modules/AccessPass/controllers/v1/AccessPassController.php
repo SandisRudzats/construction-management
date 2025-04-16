@@ -6,6 +6,7 @@ namespace api\modules\AccessPass\controllers\v1;
 
 use api\modules\AccessPass\models\AccessPass;
 use Yii;
+use yii\db\Exception;
 use yii\rest\ActiveController;
 use yii\web\NotFoundHttpException;
 use yii\filters\AccessControl;
@@ -33,6 +34,11 @@ class AccessPassController extends ActiveController
                     'actions' => ['validate-access'], //addded validate access
                     'allow' => true,
                     'verbs' => ['POST']
+                ],
+                [
+                    'actions' => ['update-from-task'], //addded validate access
+                    'allow' => true,
+                    'verbs' => ['POST']
                 ]
             ],
         ];
@@ -46,6 +52,7 @@ class AccessPassController extends ActiveController
                 'update' => ['PUT', 'PATCH'],
                 'delete' => ['DELETE'],
                 'validate-access' => ['POST'], // Added validate-access action
+                'update-from-task' => ['POST'], // Added validate-access action
             ],
         ];
 
@@ -76,8 +83,6 @@ class AccessPassController extends ActiveController
 
     public function actionCreate()
     {
-        var_dump('here');
-        die();
         $model = new AccessPass();
         $model->load(Yii::$app->getRequest()->getBodyParams(), '');
 
@@ -107,6 +112,46 @@ class AccessPassController extends ActiveController
     {
         $this->findModel($id)->delete();
         Yii::$app->getResponse()->setStatusCode(204);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function actionUpdateFromTask()
+    {
+        $body = Yii::$app->request->post();
+
+        $accessPass = AccessPass::find()
+            ->where([
+                'construction_site_id' => $body['construction_site_id'],
+                'employee_id' => $body['employee_id'],
+                'work_task_id' => $body['work_task_id'],
+            ])
+            ->one();
+
+        if (!$accessPass) {
+            $accessPass = new AccessPass();
+            $accessPass->construction_site_id = $body['construction_site_id'];
+            $accessPass->employee_id = $body['employee_id'];
+            $accessPass->work_task_id = $body['work_task_id'];
+        }
+
+        $accessPass->valid_from = $body['valid_from'];
+        $accessPass->valid_to = $body['valid_to'];
+
+        if ($accessPass->save()) {
+            return $this->asJson([
+                'success' => true,
+                'message' => $accessPass->isNewRecord ? 'Access pass created.' : 'Access pass updated.',
+                'data' => $accessPass,
+            ]);
+        }
+
+        return $this->asJson([
+            'success' => false,
+            'message' => 'Failed to save access pass.',
+            'errors' => $accessPass->getErrors(),
+        ]);
     }
 
     /**

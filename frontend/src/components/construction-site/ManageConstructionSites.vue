@@ -10,15 +10,9 @@
         <h3>{{ site.name }} (ID: {{ site.id }})</h3>
 
         <div class="site-details" v-if="editingSiteId !== site.id">
-          <div class="detail-row">
-            <strong>Manager ID:</strong> {{ site.manager_id }}
-          </div>
-          <div class="detail-row">
-            <strong>Location:</strong> {{ site.location }}
-          </div>
-          <div class="detail-row">
-            <strong>Area:</strong> {{ site.area }}
-          </div>
+          <div class="detail-row"><strong>Manager ID:</strong> {{ site.manager_id }}</div>
+          <div class="detail-row"><strong>Location:</strong> {{ site.location }}</div>
+          <div class="detail-row"><strong>Area:</strong> {{ site.area }}</div>
           <div class="detail-row">
             <strong>Required Access Level:</strong> {{ site.required_access_level }}
           </div>
@@ -33,16 +27,28 @@
           <div class="detail-row">
             <strong>Manager ID:</strong>
             <input type="number" v-model="editedSite.manager_id" />
+            <span v-if="v$.editedSite.manager_id.$error" class="error-message">
+              {{ v$.editedSite.manager_id.$errors[0].$message }}
+            </span>
           </div>
           <div class="detail-row">
             <strong>Location:</strong> <input type="text" v-model="editedSite.location" />
+            <span v-if="v$.editedSite.location.$error" class="error-message">
+              {{ v$.editedSite.location.$errors[0].$message }}
+            </span>
           </div>
           <div class="detail-row">
             <strong>Area:</strong> <input type="number" v-model="editedSite.area" />
+            <span v-if="v$.editedSite.area.$error" class="error-message">
+              {{ v$.editedSite.area.$errors[0].$message }}
+            </span>
           </div>
           <div class="detail-row">
             <strong>Required Access Level:</strong>
             <input type="number" v-model="editedSite.required_access_level" />
+            <span v-if="v$.editedSite.required_access_level.$error" class="error-message">
+              {{ v$.editedSite.required_access_level.$errors[0].$message }}
+            </span>
           </div>
           <button @click="updateSite(site)" class="action-button">Update Site</button>
         </div>
@@ -72,22 +78,34 @@
               </option>
               <option
                 v-if="
-                  getFilteredEmployees(site.manager_id, site.required_access_level).length === 0
+                  getFilteredEmployees(site?.manager_id, site.required_access_level).length === 0
                 "
                 disabled
               >
                 No suitable employees
               </option>
             </select>
+            <span v-if="v$.newTask.employee_id.$error" class="error-message">
+              {{ v$.newTask.employee_id.$errors[0].$message }}
+            </span>
           </div>
           <div class="detail-row">
             <strong>Description:</strong> <input type="text" v-model="newTask.description" />
+            <span v-if="v$.newTask.description.$error" class="error-message">
+              {{ v$.newTask.description.$errors[0].$message }}
+            </span>
           </div>
           <div class="detail-row">
             <strong>Start Date:</strong> <input type="date" v-model="newTask.start_date" />
+            <span v-if="v$.newTask.start_date.$error" class="error-message">
+              {{ v$.newTask.start_date.$errors[0].$message }}
+            </span>
           </div>
           <div class="detail-row">
             <strong>End Date:</strong> <input type="date" v-model="newTask.end_date" />
+            <span v-if="v$.newTask.end_date.$error" class="error-message">
+              {{ v$.newTask.end_date.$errors[0].$message }}
+            </span>
           </div>
           <button @click="addTask(site)" class="action-button save-button">Save Task</button>
         </div>
@@ -105,7 +123,10 @@
           </thead>
           <tbody>
           <tr v-for="task in site.workTasks" :key="task.id">
-            <td v-if="editingTaskId !== task.id">{{ task.id }}</td>
+            <td>{{ task.id }}</td>
+            <td v-if="editingTaskId !== task.id">
+              {{ employeeStore.getEmployees.find((e) => e.id === task.employee_id)?.first_name }}
+            </td>
             <td v-else>
               <select v-model="editedTask.employee_id">
                 <option
@@ -116,25 +137,39 @@
                   :key="employee.id"
                   :value="employee.id"
                 >
-                  {{ employee.first_name }} {{ employee.last_name }}
+                  {{ employee.first_name }} {{ employee.last_name }} | access level : {{ employee.access_level}}
                 </option>
                 <option
                   v-if="
-                      getFilteredEmployees(site.manager_id, site.required_access_level)
-                        .length === 0
+                      getFilteredEmployees(site.manager_id, site.required_access_level).length === 0
                     "
                   disabled
                 >
                   No suitable employees
                 </option>
               </select>
+              <span v-if="v$.editedTask.employee_id.$error" class="error-message">
+                  {{ v$.editedTask.employee_id.$errors[0].$message }}
+                </span>
             </td>
             <td v-if="editingTaskId !== task.id">{{ task.description }}</td>
-            <td v-else><input type="text" v-model="editedTask.description" /></td>
+            <td v-else><input type="text" v-model="editedTask.description" />
+              <span v-if="v$.editedTask.description.$error" class="error-message">
+                  {{ v$.editedTask.description.$errors[0].$message }}
+                </span>
+            </td>
             <td v-if="editingTaskId !== task.id">{{ task.start_date }}</td>
-            <td v-else><input type="date" v-model="editedTask.start_date" /></td>
+            <td v-else><input type="date" v-model="editedTask.start_date" />
+              <span v-if="v$.editedTask.start_date.$error" class="error-message">
+                  {{ v$.editedTask.start_date.$errors[0].$message }}
+                </span>
+            </td>
             <td v-if="editingTaskId !== task.id">{{ task.end_date }}</td>
-            <td v-else><input type="date" v-model="editedTask.end_date" /></td>
+            <td v-else><input type="date" v-model="editedTask.end_date" />
+              <span v-if="v$.editedTask.end_date.$error" class="error-message">
+                  {{ v$.editedTask.end_date.$errors[0].$message }}
+                </span>
+            </td>
             <td>
               <button
                 v-if="
@@ -153,10 +188,7 @@
               >
                 Save
               </button>
-              <button
-                @click="deleteTask(site.id, task.id)"
-                class="action-button delete-button"
-              >
+              <button @click="deleteTask(site.id, task.id)" class="action-button delete-button">
                 Delete Task
               </button>
             </td>
@@ -175,10 +207,12 @@ import { useUserStore } from '@/stores/user'
 import { useEmployeeStore } from '@/stores/employee'
 import { useConstructionSiteStore, type ConstructionSite } from '@/stores/construction-site'
 import { useTaskStore, type WorkTask } from '@/stores/task'
-import {useAccessPassStore} from "@/stores/access-pass.ts";
+import { useAccessPassStore } from '@/stores/access-pass.ts'
+import useVuelidate from '@vuelidate/core'
+import { required, numeric, helpers, minValue } from '@vuelidate/validators'
 
 export default defineComponent({
-  name: 'ViewConstructionSites',
+  name: 'ManageConstructionSites',
   setup() {
     const userStore = useUserStore()
     const employeeStore = useEmployeeStore()
@@ -221,6 +255,29 @@ export default defineComponent({
       construction_site_id: 0,
     })
 
+    const rules = computed(() => ({
+      editedSite: {
+        manager_id: { required, numeric },
+        location: { required },
+        area: { required, numeric, minValue: minValue(0) },
+        required_access_level: { required, numeric, minValue: minValue(0) },
+      },
+      newTask: {
+        employee_id: { required, numeric },
+        description: { required },
+        start_date: { required },
+        end_date: { required },
+      },
+      editedTask: {
+        employee_id: { required, numeric },
+        description: { required },
+        start_date: { required },
+        end_date: { required },
+      },
+    }))
+
+    const v$ = useVuelidate(rules, { editedSite, newTask, editedTask })
+
     // Use store actions instead of local functions
     const fetchConstructionSites = async () => {
       await constructionSiteStore.fetchConstructionSites(userStore.user)
@@ -232,6 +289,9 @@ export default defineComponent({
     }
 
     const updateSite = async (site: ConstructionSite) => {
+      const result = await v$.value.editedSite.$validate()
+      if (!result) return
+
       await constructionSiteStore.updateSite(site.id, editedSite)
       if (!constructionSiteStore.error) {
         editingSiteId.value = null
@@ -256,6 +316,9 @@ export default defineComponent({
     }
 
     const addTask = async (site: ConstructionSite) => {
+      const result = await v$.value.newTask.$validate()
+      if (!result) return
+
       newTask.construction_site_id = site.id
 
       const createdTask = await constructionSiteStore.addTask(newTask)
@@ -291,9 +354,27 @@ export default defineComponent({
     }
 
     const updateTask = async (siteId: number, task: WorkTask) => {
-      await constructionSiteStore.updateTask(task.id, editedTask)
-      if (!constructionSiteStore.error) {
+      const result = await v$.value.editedTask.$validate()
+      if (!result) return
+
+      const response = await taskStore.updateTask(task.id, editedTask)
+      if (response) {
+        await accessPassStore.updateAccessPassDatesFromTask({
+          id: response.id,
+          construction_site_id: response.construction_site_id,
+          employee_id: response.employee_id,
+          start_date: response.start_date,
+          end_date: response.end_date,
+        })
+
         editingTaskId.value = null
+
+        const index = taskStore.tasks.findIndex(t => t.id === response.id)
+        if (index !== -1) {
+          taskStore.tasks.splice(index, 1, response)
+        } else {
+          taskStore.tasks.push(response)
+        }
       }
     }
 
@@ -347,6 +428,7 @@ export default defineComponent({
       newTask,
       getFilteredEmployees,
       isTaskManager,
+      v$,
     }
   },
 })
@@ -434,5 +516,10 @@ export default defineComponent({
 
 .work-tasks-table select {
   width: auto;
+}
+
+.error-message {
+  color: red;
+  font-size: 0.8rem;
 }
 </style>

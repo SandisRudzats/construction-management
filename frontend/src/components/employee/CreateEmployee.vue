@@ -1,16 +1,16 @@
 <template>
   <div class="create-employee-view">
     <h2>Create Employee</h2>
-    <form @submit.prevent="handleSubmit" class="employee-form">
+    <form class="employee-form" @submit.prevent="handleSubmit">
       <div class="form-group">
         <label for="first_name">First Name</label>
         <input
-          type="text"
           id="first_name"
           v-model="employeeData.first_name"
+          class="form-control"
           placeholder="First Name"
           required
-          class="form-control"
+          type="text"
         />
         <div v-if="v$.first_name.$error" class="error-message">
           {{ v$.first_name.$errors[0].$message }}
@@ -19,12 +19,12 @@
       <div class="form-group">
         <label for="last_name">Last Name</label>
         <input
-          type="text"
           id="last_name"
           v-model="employeeData.last_name"
+          class="form-control"
           placeholder="Last Name"
           required
-          class="form-control"
+          type="text"
         />
         <div v-if="v$.last_name.$error" class="error-message">
           {{ v$.last_name.$errors[0].$message }}
@@ -33,11 +33,11 @@
       <div class="form-group">
         <label for="birth_date">Birth Date</label>
         <input
-          type="date"
           id="birth_date"
           v-model="employeeData.birth_date"
-          placeholder="Birth Date"
           class="form-control"
+          placeholder="Birth Date"
+          type="date"
         />
         <div v-if="v$.birth_date.$error" class="error-message">
           {{ v$.birth_date.$errors[0].$message }}
@@ -46,12 +46,12 @@
       <div class="form-group">
         <label for="username">Username</label>
         <input
-          type="text"
           id="username"
           v-model="employeeData.username"
+          class="form-control"
           placeholder="Username"
           required
-          class="form-control"
+          type="text"
         />
         <div v-if="v$.username.$error" class="error-message">
           {{ v$.username.$errors[0].$message }}
@@ -60,12 +60,12 @@
       <div class="form-group">
         <label for="password">Password</label>
         <input
-          type="password"
           id="password"
           v-model="employeeData.password"
+          class="form-control"
           placeholder="Password"
           required
-          class="form-control"
+          type="password"
         />
         <div v-if="v$.password.$error" class="error-message">
           {{ v$.password.$errors[0].$message }}
@@ -76,10 +76,10 @@
         <select
           id="access_level"
           v-model="employeeData.access_level"
-          required
           class="form-control select-placeholder"
+          required
         >
-          <option value="" disabled hidden>Access Level</option>
+          <option disabled hidden value="">Access Level</option>
           <option :value="1">1</option>
           <option :value="2">2</option>
           <option :value="3">3</option>
@@ -95,29 +95,31 @@
         <select
           id="role"
           v-model="employeeData.role"
-          required
           class="form-control select-placeholder"
+          required
         >
-          <option value="" disabled hidden>role</option>
+          <option disabled hidden value="">role</option>
           <option value="admin">admin</option>
           <option value="manager">manager</option>
           <option value="employee">employee</option>
         </select>
+        <div v-if="!employeeData.role"><span>Role selection is mandatory</span></div>
         <div v-if="v$.role.$error" class="error-message">
           {{ v$.role.$errors[0].$message }}
         </div>
       </div>
       <div class="form-group">
         <label for="manager_id">Manager</label>
-        <select id="manager_id" v-model="employeeData.manager_id" class="form-control">
+        <select id="manager_id" v-model="employeeData.manager_id" required class="form-control">
           <option :value="null">None</option>
           <option v-for="manager in managers" :key="manager.id" :value="manager.id">
             {{ manager.first_name }} {{ manager.last_name }} (ID: {{ manager.id }})
           </option>
         </select>
+        <div v-if="!employeeData.manager_id">Manager selection is mandatory</div>
       </div>
       <div class="button-group">
-        <button type="submit" class="btn-dark-gray-confirm" :disabled="isSubmitting">
+        <button :disabled="isSubmitting" class="btn-dark-gray-confirm" type="submit">
           <span v-if="isSubmitting">Creating...</span>
           <span v-else>Create Employee</span>
         </button>
@@ -129,10 +131,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive, onMounted, computed } from 'vue'
+import { computed, defineComponent, onMounted, reactive, ref } from 'vue'
 import { useVuelidate } from '@vuelidate/core'
-import { required, minLength, helpers } from '@vuelidate/validators'
-import { useEmployeeStore, type NewEmployee, type Employee } from '@/stores/employee.ts'
+import { helpers, minLength, required } from '@vuelidate/validators'
+import { type NewEmployee, useEmployeeStore } from '@/stores/employee.ts'
 
 // Custom validator for date format (YYYY-MM-DD)
 const dateFormat = helpers.regex(/^\d{4}-\d{2}-\d{2}$/)

@@ -103,5 +103,33 @@ export const useAccessPassStore = defineStore('accessPass', {
         this.loading = false
       }
     },
+
+    async updateAccessPassDatesFromTask(task: {
+      id: number
+      construction_site_id: number
+      employee_id: number
+      start_date: string
+      end_date: string
+    }) {
+      this.loading = true
+      this.error = null
+
+      try {
+        const response = await api.post('/v1/access-passes/update-from-task', {
+          construction_site_id: task.construction_site_id,
+          employee_id: task.employee_id,
+          work_task_id: task.id,
+          valid_from: task.start_date,
+          valid_to: task.end_date,
+        })
+
+        return response.data
+      } catch (err: any) {
+        this.error = err.response?.data?.message || 'Failed to update access pass from task.'
+        throw err
+      } finally {
+        this.loading = false
+      }
+    }
   },
 })

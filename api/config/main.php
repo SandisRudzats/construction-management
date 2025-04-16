@@ -151,6 +151,7 @@ return [
                 'POST v1/work-task/create' => 'work-task/work-task/create',
                 'POST v1/access-passes/create' => 'access-pass/access-pass/create',
                 'v1/access-pass/<action>' => 'access-pass/access-pass/<action>',
+                'POST v1/access-passes/update-from-task' => 'access-pass/access-pass/update-from-task',
 //                [
 //                    'pattern' => 'employee/profile',
 //                    'route' => 'employee/employee/view-self',

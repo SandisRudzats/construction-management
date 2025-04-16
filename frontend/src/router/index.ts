@@ -5,7 +5,7 @@ import Dashboard from '@/views/Dashboard.vue';
 
 // Construction Site Components
 import CreateConstructionSite from '@/components/construction-site/CreateConstructionSite.vue';
-import ViewConstructionSites from '@/components/construction-site/ViewConstructionSites.vue';
+import ManageConstructionSites from '@/components/construction-site/ManageConstructionSites.vue';
 
 // Employee Components
 import CreateEmployee from '@/components/employee/CreateEmployee.vue';
@@ -52,7 +52,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/construction-sites',
     name: 'ConstructionSites',
-    component: ViewConstructionSites,
+    component: ManageConstructionSites,
     meta: { requiresAuth: true },
   },
   {
