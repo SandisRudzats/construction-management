@@ -24,6 +24,7 @@ use yii\db\ActiveRecord;
  */
 class ConstructionSite extends ActiveRecord
 {
+    public const REQUIRED_FIELDS = ['manager_id', 'location', 'name', 'area', 'required_access_level'];
     public const TABLE_NAME = 'construction_sites';
 
     public static function tableName(): string
@@ -34,7 +35,7 @@ class ConstructionSite extends ActiveRecord
     public function rules(): array
     {
         return [
-            [['manager_id', 'location', 'name', 'area', 'required_access_level'], 'required'],
+            [self::REQUIRED_FIELD, 'required'],
             [['location'], 'string', 'max' => 255],
             [['required_access_level'], 'integer'],
             [['area'], 'number'],

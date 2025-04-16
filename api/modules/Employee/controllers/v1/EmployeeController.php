@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace api\modules\Employee\controllers\v1;
 
 use api\helpers\RbacValidationHelper;
+use api\modules\Employee\interfaces\EmployeeServiceInterface;
 use api\modules\Employee\models\Employee;
-use api\modules\Employee\services\EmployeeService;
 use Throwable;
 use Yii;
 use yii\base\Exception;
@@ -23,7 +23,7 @@ class EmployeeController extends ActiveController
     public function __construct(
         $id,
         $module,
-        private readonly EmployeeService $employeeService,
+        private readonly EmployeeServiceInterface $employeeService,
         private readonly RbacValidationHelper $validationHelper,
         $config = []
     ) {
@@ -56,7 +56,7 @@ class EmployeeController extends ActiveController
     public function actions(): array
     {
         $actions = parent::actions();
-        unset($actions['create'], $actions['update'], $actions['delete'], $actions['view']);
+        unset($actions['create'], $actions['update'], $actions['delete']);
         return $actions;
     }
 
@@ -90,15 +90,15 @@ class EmployeeController extends ActiveController
     /**
      * @throws NotFoundHttpException
      * @throws ForbiddenHttpException
+     * @throws Exception
      */
     public function actionUpdate(int $id): Response
     {
         $this->validationHelper->validatePermissionsOrFail(['manageEmployees']);
         $data = Yii::$app->request->post();
-        $employee = $this->findModel($id);
 
         try {
-            $updatedEmployee = $this->employeeService->updateEmployee($employee, $data);
+            $updatedEmployee = $this->employeeService->updateEmployee($id, $data);
 
             Yii::$app->response->statusCode = 200;
             return $this->asJson([
@@ -118,6 +118,7 @@ class EmployeeController extends ActiveController
 
     /**
      * @throws ForbiddenHttpException
+     * @throws Exception
      */
     public function actionDelete(int $id): Response
     {

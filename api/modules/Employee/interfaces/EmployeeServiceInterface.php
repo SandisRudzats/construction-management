@@ -10,7 +10,7 @@ interface EmployeeServiceInterface
 {
     public function createEmployee(array $data): ?Employee;
 
-    public function updateEmployee(Employee $employee, array $data): ?Employee;
+    public function updateEmployee(int $id, array $data): ?Employee;
 
     public function deleteEmployee(int $id): bool;
 

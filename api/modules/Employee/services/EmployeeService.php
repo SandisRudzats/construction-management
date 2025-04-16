@@ -13,6 +13,7 @@ use Yii;
 use yii\base\Exception;
 use yii\db\Exception as DbException;
 use yii\db\StaleObjectException;
+use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 
 readonly class EmployeeService implements EmployeeServiceInterface
@@ -28,7 +29,11 @@ readonly class EmployeeService implements EmployeeServiceInterface
      */
     public function createEmployee(array $data): Employee
     {
-        $this->requestValidationHelper->validateRequiredFields($data, Employee::REQUIRED_FIELDS);
+        if (!$this->requestValidationHelper->validateRequiredFields($data, Employee::REQUIRED_FIELDS)) {
+            throw new BadRequestHttpException(
+                'Missing required parameters'
+            );
+        }
 
         $employee = new Employee();
         $employee->username = $data['username'];
@@ -56,9 +61,19 @@ readonly class EmployeeService implements EmployeeServiceInterface
     /**
      * @throws Exception | \Exception
      */
-    public function updateEmployee(Employee $employee, array $data): ?Employee
+    public function updateEmployee(int $id, array $data): ?Employee
     {
-        $this->requestValidationHelper->validateRequiredFields($data, Employee::REQUIRED_FIELDS);
+        if (!$this->requestValidationHelper->validateRequiredFields($data, Employee::REQUIRED_FIELDS)) {
+            throw new BadRequestHttpException(
+                'Missing required parameters'
+            );
+        }
+
+        $employee = $this->repository->find($id);
+        if (!$employee) {
+            throw new Exception('Employee not found.');
+        }
+
         $auth = Yii::$app->authManager;
 
         $newRoleName = $data['role'] ?? null;
@@ -94,12 +109,8 @@ readonly class EmployeeService implements EmployeeServiceInterface
     public function deleteEmployee(int $id): bool
     {
         $employee = $this->repository->find($id);
-
         if (!$employee) {
             throw new Exception('Employee not found.');
-        }
-        if (!Yii::$app->user->can('deleteEmployee', ['employee' => $employee])) {
-            throw new ForbiddenHttpException("You don't have permission to delete this employee.");
         }
 
         if (!$this->repository->delete($employee)) {
@@ -117,7 +128,7 @@ readonly class EmployeeService implements EmployeeServiceInterface
         return $this->repository->getActiveEmployees();
     }
 
-    public function getEmployeeById(mixed $id): ?Employee
+    public function getEmployeeById(int $id): ?Employee
     {
         return $this->repository->find($id);
     }

@@ -4,19 +4,35 @@ declare(strict_types=1);
 
 namespace api\modules\ConstructionSite\controllers\v1;
 
+use api\helpers\RbacValidationHelper;
+use api\modules\ConstructionSite\interfaces\ConstructionSiteServiceInterface;
 use api\modules\ConstructionSite\models\ConstructionSite;
-use yii\rest\ActiveController;
-use yii\web\NotFoundHttpException;
+use Throwable;
+use Yii;
+use yii\base\Exception;
+use yii\data\ActiveDataProvider;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
-use yii\data\ActiveDataProvider;
-use Yii;
+use yii\rest\ActiveController;
+use yii\web\ForbiddenHttpException;
+use yii\web\NotFoundHttpException;
+use yii\web\Response;
 
 class ConstructionSiteController extends ActiveController
 {
     public $modelClass = ConstructionSite::class;
 
-    public function behaviors()
+    public function __construct(
+        $id,
+        $module,
+        private readonly ConstructionSiteServiceInterface $constructionSiteService,
+        private readonly RbacValidationHelper $validationHelper,
+        $config = []
+    ) {
+        parent::__construct($id, $module, $config);
+    }
+
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
 
@@ -52,41 +68,91 @@ class ConstructionSiteController extends ActiveController
         return $behaviors;
     }
 
-    public function actions()
+    public function actions(): array
     {
         $actions = parent::actions();
         unset($actions['index']);
         return $actions;
     }
 
-    public function actionCreate()
+    /**
+     * @throws ForbiddenHttpException
+     */
+    public function actionCreate(): Response
     {
-        $model = new ConstructionSite();
-        $model->load(Yii::$app->getRequest()->getBodyParams(), '');
+        $this->validationHelper->validatePermissionsOrFail(['manageSites']);
+        $data = Yii::$app->request->post();
 
-        if ($model->save()) {
-            return $model;
-        } else {
-            return $model->getErrors();
+        try {
+            $site = $this->constructionSiteService->createSite($data);
+
+            Yii::$app->response->statusCode = 201;
+            return $this->asJson([
+                'success' => true,
+                'data' => $site->toArray(),
+                'message' => 'Construction site created successfully.',
+            ]);
+        } catch (Exception $e) {
+            Yii::$app->response->statusCode = 400;
+            return $this->asJson([
+                'success' => false,
+                'data' => null,
+                'message' => $e->getMessage(),
+            ]);
         }
     }
 
-    public function actionUpdate($id)
+    /**
+     * @throws ForbiddenHttpException
+     */
+    public function actionUpdate(int $id): Response
     {
-        $model = $this->findModel($id);
-        $model->load(Yii::$app->getRequest()->getBodyParams(), '');
+        $this->validationHelper->validatePermissionsOrFail(['manageSites']);
+        $data = Yii::$app->request->post();
 
-        if ($model->save()) {
-            return $model;
-        } else {
-            return $model->getErrors();
+        try {
+            $updatedEmployee = $this->constructionSiteService->updateSite($id, $data);
+
+            Yii::$app->response->statusCode = 200;
+            return $this->asJson([
+                'success' => true,
+                'data' => $updatedEmployee->toArray(),
+                'message' => 'Employee updated successfully.',
+            ]);
+        } catch (Exception|\Exception $e) {
+            Yii::$app->response->statusCode = 400;
+            return $this->asJson([
+                'success' => false,
+                'data' => null,
+                'message' => $e->getMessage(),
+            ]);
         }
     }
 
+    /**
+     * @throws ForbiddenHttpException
+     */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
-        Yii::$app->getResponse()->setStatusCode(204);
+        $this->validationHelper->validatePermissionsOrFail(['manageSites']);
+
+        try {
+            $this->constructionSiteService->deleteSite($id);
+
+            Yii::$app->response->statusCode = 204;
+            return $this->asJson([
+                'success' => true,
+                'data' => null,
+                'message' => 'Construction site deleted successfully.',
+            ]);
+        } catch (Exception|Throwable $e) {
+            Yii::$app->response->statusCode = 400;
+            return $this->asJson([
+                'success' => false,
+                'data' => null,
+                'message' => $e->getMessage(),
+            ]);
+        }
     }
 
     public function actionWorkTasks($id)
@@ -143,11 +209,6 @@ class ConstructionSiteController extends ActiveController
         return ['message' => 'Forbidden'];
     }
 
-    public function actionEmployeeSites(int $id)
-    {
-
-    }
-
     public function actionManagerSites()
     {
         // 1. Get the manager's ID.
@@ -166,12 +227,15 @@ class ConstructionSiteController extends ActiveController
         return $dataProvider;
     }
 
-    protected function findModel($id)
+    /**
+     * @throws NotFoundHttpException
+     */
+    protected function findModel(int $id): ?ConstructionSite
     {
-        if (($model = ConstructionSite::findOne($id)) !== null) {
-            return $model;
+        $site = ConstructionSite::findOne($id);
+        if ($site === null) {
+            throw new NotFoundHttpException('Site not found.');
         }
-
-        throw new NotFoundHttpException('The requested page does not exist.');
+        return $site;
     }
 }
