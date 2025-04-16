@@ -1,11 +1,14 @@
 <template>
   <div class="view-employees-view">
     <h2>Edit Employees</h2>
+
     <div v-if="loading" class="loading-indicator">Loading employees...</div>
     <div v-if="error" class="error-message">{{ error }}</div>
-    <div v-if="employees && employees.length > 0" class="employee-list">
-      <table class="employee-table">
-        <thead>
+
+    <div v-if="canViewEmployees">
+      <div v-if="employees && employees.length > 0" class="employee-list">
+        <table class="employee-table">
+          <thead>
           <tr>
             <th>ID</th>
             <th>First Name</th>
@@ -14,141 +17,189 @@
             <th>Username</th>
             <th>Role</th>
             <th>Access Level</th>
-            <th>Manager ID</th>
+            <th>Manager</th>
             <th>Active</th>
-            <th>Actions</th>
+            <th v-if="canEditEmployees">Actions</th>
           </tr>
-        </thead>
-        <tbody>
+          </thead>
+          <tbody>
           <tr v-for="employee in employees" :key="employee.id">
             <td>{{ employee.id }}</td>
             <td>
-              <input v-model="employee.first_name" type="text" />
+              <input v-model="employee.first_name" type="text" :disabled="!canEditEmployees" />
+              <span v-if="employeeVuelidate(employee.id)?.first_name.$error" class="error-message">
+                  {{ employeeVuelidate(employee.id)?.first_name.$errors[0].$message }}
+                </span>
             </td>
             <td>
-              <input v-model="employee.last_name" type="text" />
+              <input v-model="employee.last_name" type="text" :disabled="!canEditEmployees" />
+              <span v-if="employeeVuelidate(employee.id)?.last_name.$error" class="error-message">
+                  {{ employeeVuelidate(employee.id)?.last_name.$errors[0].$message }}
+                </span>
             </td>
             <td>
-              <input v-model="employee.birth_date" type="date" />
+              <input v-model="employee.birth_date" type="date" :disabled="!canEditEmployees" />
+              <span v-if="employeeVuelidate(employee.id)?.birth_date.$error" class="error-message">
+                  {{ employeeVuelidate(employee.id)?.birth_date.$errors[0].$message }}
+                </span>
             </td>
             <td>
-              <input v-model="employee.username" type="text" />
+              <input v-model="employee.username" type="text" :disabled="!canEditEmployees" />
+              <span v-if="employeeVuelidate(employee.id)?.username.$error" class="error-message">
+                  {{ employeeVuelidate(employee.id)?.username.$errors[0].$message }}
+                </span>
             </td>
             <td>
-              <input v-model="employee.role" type="text" />
+              <select v-model="employee.role" :disabled="!canEditEmployees">
+                <option value="admin">Admin</option>
+                <option value="manager">Manager</option>
+                <option value="employee">Employee</option>
+              </select>
+              <span v-if="employeeVuelidate(employee.id)?.role.$error" class="error-message">
+                  {{ employeeVuelidate(employee.id)?.role.$errors[0].$message }}
+                </span>
             </td>
             <td>
-              <input v-model="employee.access_level" type="number" />
+              <input v-model="employee.access_level" type="number" :disabled="!canEditEmployees" />
+              <span v-if="employeeVuelidate(employee.id)?.access_level.$error" class="error-message">
+                  {{ employeeVuelidate(employee.id)?.access_level.$errors[0].$message }}
+                </span>
             </td>
             <td>
-              <input v-model="employee.manager_id" type="number" />
+              <select v-model="employee.manager_id" :disabled="!canEditEmployees">
+                <option value="">Select Manager</option>
+                <option v-for="manager in managers" :key="manager.id" :value="manager.id">
+                  {{ manager.first_name }} {{ manager.last_name }}
+                </option>
+              </select>
+              <span v-if="employeeVuelidate(employee.id)?.manager_id.$error" class="error-message">
+                  {{ employeeVuelidate(employee.id)?.manager_id.$errors[0].$message }}
+                </span>
             </td>
-            <td>
-              <input v-model="employee.active" type="checkbox" />
-            </td>
-            <td>
-              <button @click="updateEmployee(employee.id)" class="update-button">Update</button>
+            <td><input v-model="employee.active" type="checkbox" :disabled="!canEditEmployees" /></td>
+            <td v-if="canEditEmployees">
+              <button @click="updateEmployee(employee.id, employee)" class="update-button">Update</button>
             </td>
           </tr>
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
+      <div v-else-if="!loading && !error" class="no-employees-message">No employees found.</div>
     </div>
-    <div v-else-if="!loading && !error" class="no-employees-message">No employees found.</div>
+
+    <div v-else>
+      <p>You do not have permission to view employees.</p>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue'
-import api from '@/services/api'
+import { defineComponent, onMounted, computed, ref } from 'vue';
+import { useEmployeeStore, type Employee } from '@/stores/employee.ts';
+import { useUserStore } from '@/stores/user.ts';
+import useVuelidate from '@vuelidate/core';
+import {required, numeric, minValue} from '@vuelidate/validators';
 
-interface Employee {
-  id: number
-  first_name: string
-  last_name: string
-  birth_date: string | null
-  username: string
-  password_hash: string | null // Note:  We don't обычно edit this directly
-  access_level: number
-  manager_id: number
-  role: string
-  active: boolean
-  created_at: string | null
-  updated_at: string | null
+interface EmployeeValidationRules {
+  first_name: { required: typeof required };
+  last_name: { required: typeof required };
+  birth_date: { required: typeof required };
+  username: { required: typeof required };
+  role: { required: typeof required };
+  access_level: { required: typeof required; numeric: typeof numeric };
+  manager_id: { required: typeof required };
 }
 
 export default defineComponent({
   name: 'EditEmployeesView',
   setup() {
-    const employees = ref<Employee[]>([])
-    const loading = ref(false)
-    const error = ref<string | null>(null)
-
-    const fetchEmployees = async () => {
-      loading.value = true
-      error.value = null
-      try {
-        const response = await api.get('v1/employee')
-        if (response.status === 200) {
-          employees.value = response.data
-        } else {
-          error.value = 'Failed to fetch employees.'
-        }
-      } catch (err: any) {
-        error.value = err.message || 'An error occurred.'
-      } finally {
-        loading.value = false
-      }
-    }
-
-    const updateEmployee = async (id: number) => {
-      const employeeToUpdate = employees.value.find((emp) => emp.id === id)
-      if (!employeeToUpdate) {
-        console.error('Employee to update not found:', id)
-        return
-      }
-
-      try {
-        //  Don't send password_hash
-        const { ...dataToUpdate } = employeeToUpdate
-
-        const response = await api.put(`v1/employee/${id}`, dataToUpdate)
-        if (response.status === 200) {
-          const updatedEmployeeData = response.data
-          const index = employees.value.findIndex((e) => e.id === id)
-          if (index !== -1) {
-            employees.value[index] = {
-              ...employees.value[index],
-              ...updatedEmployeeData,
-            }
-          }
-          console.log('Employee updated successfully:', response.data)
-        } else {
-          error.value = 'Failed to update employee.'
-          console.error('Failed to update employee:', response.data)
-        }
-      } catch (err: any) {
-        const errors = err.response?.data?.errors
-
-        if (errors) {
-          error.value = Object.entries(errors)
-            .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
-            .join('\n') ?? ['An error occurred.']
-        }
-      }
-    }
+    const employeeStore = useEmployeeStore();
+    const userStore = useUserStore();
+    const canEditEmployees = computed(() => userStore.user?.role === 'admin');
+    const canViewEmployees = computed(() => {
+      return ['admin', 'manager'].includes(userStore.user?.role ?? '');
+    });
 
     onMounted(() => {
-      fetchEmployees()
-    })
+      if (!employeeStore.hasFetched) {
+        employeeStore.fetchEmployees();
+      }
+    });
+
+    const employees = computed(() => {
+      const user = userStore.user;
+      if (user?.role === 'manager' && user.id !== null && user.id !== undefined) {
+        return employeeStore.getEmployeesByManagerId(user.id);
+      }
+      return employeeStore.employees;
+    });
+
+    const { loading, error } = employeeStore;
+
+    const managers = computed(() => employeeStore.getManagers);
+
+    const employeeValidations = ref<{ [key: number]: any }>({});
+
+    const employeeVuelidate = (employeeId: number) => {
+      if (!employeeValidations.value[employeeId]) {
+        const rules = {
+          first_name: { required },
+          last_name: { required },
+          birth_date: { required },
+          username: { required },
+          role: { required },
+          access_level: { required, numeric, minValue: minValue(1) },
+          manager_id: { required },
+        };
+
+        const employee = employees.value.find((e) => e.id === employeeId);
+        const state = employee
+          ? employee
+          : {
+            first_name: '',
+            last_name: '',
+            birth_date: '',
+            username: '',
+            role: '',
+            access_level: 0,
+            manager_id: '',
+          };
+
+        employeeValidations.value[employeeId] = useVuelidate(rules, state);
+      }
+      return employeeValidations.value[employeeId];
+    };
+
+    const updateEmployee = async (id: number, updatedData: Employee) => {
+      try {
+        const v$ = employeeVuelidate(id);
+        if (!v$) return;
+        const validationResult = await v$.$validate();
+        if (!validationResult) return;
+
+        if (!updatedData.birth_date) {
+          updatedData.birth_date = '';
+        }
+
+        await employeeStore.updateEmployee(id, updatedData);
+        console.log('Employee updated successfully.');
+      } catch (err) {
+        console.error('Failed to update employee:', err);
+      }
+    };
 
     return {
       employees,
       loading,
       error,
+      managers,
       updateEmployee,
-    }
+      canEditEmployees,
+      canViewEmployees,
+      employeeVuelidate,
+    };
   },
-})
+});
 </script>
 
 <style scoped>

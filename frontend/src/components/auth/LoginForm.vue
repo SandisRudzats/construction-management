@@ -49,13 +49,13 @@ export default defineComponent({
       }
 
       try {
-        const response = await api.post('/auth/login', { //  Use your API endpoint
+        const response = await api.post('/auth/login', {
           username: username.value,
           password: password.value,
         })
 
-        userStore.setUser(response.data); // Store user data
-        localStorage.setItem('user', JSON.stringify(response.data)); // Persist
+        userStore.setUser(response.data) // Store user data
+        localStorage.setItem('user', JSON.stringify(response.data)) // Persist
         await router.push('/dashboard') //  your dashboard route
       } catch (err: any) {
         const message =
@@ -136,6 +136,20 @@ export default defineComponent({
   outline: none;
   border-color: var(--primary); /* Use your CSS variable */
   box-shadow: 0 2px 6px rgba(var(--primary-rgb), 0.3); /* Use your CSS variable */
+}
+
+.btn-dark-gray-confirm:hover {
+  background-color: var(--primary-dark); /* Use your CSS variable */
+  transform: translateY(-2px);
+}
+
+.btn-dark-gray-confirm:active {
+  background-color: color-mix(
+    in srgb,
+    var(--primary-dark),
+    #000000 20%
+  ); /* Use your CSS variable */
+  transform: translateY(0);
 }
 
 .error-message {
