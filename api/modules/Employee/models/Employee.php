@@ -38,6 +38,10 @@ class Employee extends ActiveRecord implements IdentityInterface
     public const TABLE_NAME = 'employees';
     public const REQUIRED_FIELDS = ['first_name', 'last_name', 'username', 'role', 'manager_id'];
 
+    public const ROLE_ADMIN = 'admin';
+    public const ROLE_EMPLOYEE = 'employee';
+    public const ROLE_MANAGER = 'manager';
+
     public static function tableName(): string
     {
         return self::TABLE_NAME;

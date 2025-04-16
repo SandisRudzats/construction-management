@@ -4,16 +4,32 @@ declare(strict_types=1);
 
 namespace api\modules\WorkTask\controllers\v1;
 
+use api\helpers\RbacValidationHelper;
+use api\modules\WorkTask\interfaces\WorkTaskServiceInterface;
 use api\modules\WorkTask\models\WorkTask;
-use yii\rest\ActiveController;
-use yii\web\NotFoundHttpException;
+use Exception;
+use Throwable;
+use Yii;
+use yii\data\ActiveDataProvider;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
-use yii\data\ActiveDataProvider;
-use Yii;
+use yii\rest\ActiveController;
+use yii\web\ForbiddenHttpException;
+use yii\web\NotFoundHttpException;
+use yii\web\Response;
 
 class WorkTaskController extends ActiveController
 {
+    public function __construct(
+        $id,
+        $module,
+        private readonly WorkTaskServiceInterface $workTaskService,
+        private readonly RbacValidationHelper $validationHelper,
+        $config = []
+    ) {
+        parent::__construct($id, $module, $config);
+    }
+
     public $modelClass = WorkTask::class;
 
     public function behaviors()
@@ -24,7 +40,7 @@ class WorkTaskController extends ActiveController
             'class' => AccessControl::class,
             'rules' => [
                 [
-                    'actions' => ['create', 'update', 'delete', 'index', 'employee'], // Added 'employee' action
+                    'actions' => ['create', 'update', 'delete', 'employee-tasks'],
                     'allow' => true,
                     'roles' => ['@'],
                 ],
@@ -37,85 +53,139 @@ class WorkTaskController extends ActiveController
                 'create' => ['POST'],
                 'update' => ['PUT', 'PATCH'],
                 'delete' => ['DELETE'],
-                'index' => ['GET'],
-                'employee' => ['GET'], // Added 'employee' action to verbs
+                'employee-tasks' => ['GET'],
             ],
         ];
 
         return $behaviors;
     }
 
-    public function actions()
+    public function actions(): array
     {
         $actions = parent::actions();
         unset($actions['index']);
         return $actions;
     }
 
-    public function actionCreate()
+    /**
+     * @throws ForbiddenHttpException
+     */
+    public function actionCreate(): Response
     {
-        $model = new WorkTask();
-        $model->load(Yii::$app->getRequest()->getBodyParams(), '');
+        $this->validationHelper->validatePermissionsOrFail(['manageOwnTasks', 'manageAllTasks']);
+        $data = Yii::$app->request->post();
 
-        if ($model->save()) {
-            return $model;
-        } else {
-            return $model->getErrors();
+        try {
+            $workTask = $this->workTaskService->createTask($data);
+
+            Yii::$app->response->statusCode = 201;
+            return $this->asJson([
+                'success' => true,
+                'data' => $workTask->toArray(),
+                'message' => 'Work Task created successfully.',
+            ]);
+        } catch (Exception $e) {
+            Yii::$app->response->statusCode = 400;
+            return $this->asJson([
+                'success' => false,
+                'data' => null,
+                'message' => $e->getMessage(),
+            ]);
         }
     }
 
     /**
      * @param $id
-     * @return WorkTask|array|null
-     * @throws NotFoundHttpException
-     * @throws \yii\base\InvalidConfigException
-     * @throws \yii\db\Exception
+     * @throws ForbiddenHttpException
      */
-    public function actionUpdate($id)
+    public function actionUpdate($id): Response
     {
-        $model = $this->findModel($id);
-        $model->load(Yii::$app->getRequest()->getBodyParams(), '');
+        $this->validationHelper->validatePermissionsOrFail(['manageOwnTasks', 'manageAllTasks']);
+        $data = Yii::$app->request->post();
 
-        if ($model->save()) {
-            return $model;
-        } else {
-            return $model->getErrors();
+        try {
+            $updatedEmployee = $this->workTaskService->updateTask($id, $data);
+
+            Yii::$app->response->statusCode = 200;
+            return $this->asJson([
+                'success' => true,
+                'data' => $updatedEmployee->toArray(),
+                'message' => 'Work task updated successfully.',
+            ]);
+        } catch (Exception|\Exception $e) {
+            Yii::$app->response->statusCode = 400;
+            return $this->asJson([
+                'success' => false,
+                'data' => null,
+                'message' => $e->getMessage(),
+            ]);
         }
     }
 
-    public function actionDelete($id)
+    /**
+     * @throws ForbiddenHttpException
+     */
+    public function actionDelete(int $id): Response
     {
-        $this->findModel($id)->delete();
-        Yii::$app->getResponse()->setStatusCode(204);
-    }
+        $this->validationHelper->validatePermissionsOrFail(['manageOwnTasks', 'manageAllTasks']);
 
-    public function actionIndex()
-    {
-        $dataProvider = new ActiveDataProvider([
-            'query' => WorkTask::find(),
-        ]);
+        try {
+            $this->workTaskService->deleteTask($id);
 
-        return $dataProvider;
-    }
-
-    public function actionEmployee()
-    {
-        $userId = Yii::$app->user->id; // Get user ID from session.
-
-        $query = WorkTask::find()->where(['employee_id' => $userId]);
-        $dataProvider = new ActiveDataProvider([
-            'query' => $query,
-        ]);
-
-        return $dataProvider;
-    }
-
-    protected function findModel($id)
-    {
-        if (($model = WorkTask::findOne($id)) !== null) {
-            return $model;
+            Yii::$app->response->statusCode = 204;
+            return $this->asJson([
+                'success' => true,
+                'data' => null,
+                'message' => 'Work task deleted successfully.',
+            ]);
+        } catch (Exception|Throwable $e) {
+            Yii::$app->response->statusCode = 400;
+            return $this->asJson([
+                'success' => false,
+                'data' => null,
+                'message' => $e->getMessage(),
+            ]);
         }
+    }
 
-        throw new NotFoundHttpException('The requested page does not exist.');
+
+    /**
+     * @throws ForbiddenHttpException
+     */
+    public function actionEmployeeTasks(): Response
+    {
+        $this->validationHelper->validatePermissionsOrFail(['viewOwnTasks']);
+
+        $userId = Yii::$app->user->id;
+
+        try {
+            $workTasks = $this->workTaskService->getTasksByEmployeeId($userId);
+
+            Yii::$app->response->statusCode = 200;
+            return $this->asJson([
+                'success' => true,
+                'data' => $workTasks,
+                'message' => 'Employee work tasks retrieved successfully.',
+            ]);
+        } catch (Exception|Throwable $e) {
+            Yii::$app->response->statusCode = 400;
+            return $this->asJson([
+                'success' => false,
+                'data' => null,
+                'message' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * @throws NotFoundHttpException
+     */
+    protected function findModel($id): ?WorkTask
+    {
+        $task = WorkTask::findOne($id);
+        if ($task === null) {
+            throw new NotFoundHttpException('Work Task not found.');
+        }
+        return $task;
     }
 }

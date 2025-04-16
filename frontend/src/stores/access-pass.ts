@@ -1,7 +1,7 @@
 // stores/access-pass.ts
 import { defineStore } from 'pinia'
-import axios from 'axios'
 import api from '@/services/api'
+import type { ApiResponse } from '@/interfaces/ApiResponse.ts'
 
 export interface AccessPass {
   id: number
@@ -32,32 +32,6 @@ export const useAccessPassStore = defineStore('accessPass', {
   },
 
   actions: {
-    async fetchAccessPasses() {
-      this.loading = true
-      this.error = null
-      try {
-        const response = await axios.get('/api/v1/access-passes')
-        this.accessPasses = response.data
-      } catch (err: any) {
-        this.error = err.response?.data?.message || 'Failed to fetch access passes.'
-      } finally {
-        this.loading = false
-      }
-    },
-
-    async deleteAccessPass(id: number) {
-      this.loading = true
-      this.error = null
-      try {
-        await axios.delete(`/api/v1/access-passes/${id}`)
-        this.accessPasses = this.accessPasses.filter((p) => p.id !== id)
-      } catch (err: any) {
-        this.error = err.response?.data?.message || 'Failed to delete access pass.'
-      } finally {
-        this.loading = false
-      }
-    },
-
     async validateAccessPass(
       employeeId: number,
       constructionSiteId: number,
@@ -68,17 +42,25 @@ export const useAccessPassStore = defineStore('accessPass', {
       this.error = null
 
       try {
-        const response = await api.post('v1/access-pass/validate-access', {
+        const response = await api.post<ApiResponse<AccessPass>>('v1/access-pass/validate-access', {
           employeeId,
           constructionSiteId,
           workTaskId,
           checkDate,
         })
-
-        return response.data
-      } catch (error: any) {
-        this.error = error.response?.data?.message || 'Failed to validate access.'
-        throw error
+        if (response.data.success) {
+          return response.data.data
+        } else {
+          this.error = response.data.message
+          return null
+        }
+      } catch (err: Error | unknown) {
+        if (err instanceof Error) {
+          this.error = err.message
+        } else {
+          this.error = 'An unknown error occurred while updating acquiring access pass'
+          return null
+        }
       } finally {
         this.loading = false
       }
@@ -94,11 +76,23 @@ export const useAccessPassStore = defineStore('accessPass', {
       this.loading = true
       this.error = null
       try {
-        const response = await api.post('/v1/access-passes/create', payload)
-        return response.data
-      } catch (err: any) {
-        this.error = err.response?.data?.message || 'Failed to create access pass.'
-        console.error('Access pass creation error:', this.error)
+        const response = await api.post<ApiResponse<AccessPass>>('/v1/access-passes/create', payload)
+        if (response.data.success) {
+          const accessPass = response.data.data
+          if (accessPass) {
+            return accessPass
+          }
+        } else {
+          this.error = response.data.message
+          return null
+        }
+      } catch (err: Error | unknown) {
+        if (err instanceof Error) {
+          this.error = err.message
+        } else {
+          this.error = 'An unknown error occurred while updating acquiring access pass'
+          return null
+        }
       } finally {
         this.loading = false
       }
@@ -115,21 +109,32 @@ export const useAccessPassStore = defineStore('accessPass', {
       this.error = null
 
       try {
-        const response = await api.post('/v1/access-passes/update-from-task', {
+        const response = await api.post<ApiResponse<AccessPass>>('/v1/access-passes/update-from-task', {
           construction_site_id: task.construction_site_id,
           employee_id: task.employee_id,
           work_task_id: task.id,
           valid_from: task.start_date,
           valid_to: task.end_date,
         })
-
-        return response.data
-      } catch (err: any) {
-        this.error = err.response?.data?.message || 'Failed to update access pass from task.'
-        throw err
+        if (response.data.success) {
+          const accessPass = response.data.data
+          if (accessPass) {
+            return accessPass
+          }
+        } else {
+          this.error = response.data.message
+          return null
+        }
+      } catch (err: Error | unknown) {
+        if (err instanceof Error) {
+          this.error = err.message
+        } else {
+          this.error = 'An unknown error occurred while updating acquiring access pass'
+          return null
+        }
       } finally {
         this.loading = false
       }
-    }
+    },
   },
 })

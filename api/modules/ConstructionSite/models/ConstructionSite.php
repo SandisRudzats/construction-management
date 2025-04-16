@@ -35,7 +35,7 @@ class ConstructionSite extends ActiveRecord
     public function rules(): array
     {
         return [
-            [self::REQUIRED_FIELD, 'required'],
+            [self::REQUIRED_FIELDS, 'required'],
             [['location'], 'string', 'max' => 255],
             [['required_access_level'], 'integer'],
             [['area'], 'number'],

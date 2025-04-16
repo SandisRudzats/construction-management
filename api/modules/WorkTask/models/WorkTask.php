@@ -25,7 +25,7 @@ use yii\db\ActiveRecord;
 class WorkTask extends ActiveRecord
 {
     public const TABLE_NAME = 'work_tasks';
-
+    public const REQUIRED_FIELDS = ['employee_id', 'construction_site_id', 'start_date', 'end_date', 'description'];
     public static function tableName(): string
     {
         return self::TABLE_NAME;
@@ -34,7 +34,7 @@ class WorkTask extends ActiveRecord
     public function rules(): array
     {
         return [
-            [['employee_id', 'construction_site_id'], 'required'],
+            [self::REQUIRED_FIELDS, 'required'],
             [['employee_id', 'construction_site_id'], 'integer'],
             [['start_date', 'end_date'], 'safe'], // Consider using 'date' validator with a specific format
             [

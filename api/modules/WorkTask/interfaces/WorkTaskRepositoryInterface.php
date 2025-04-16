@@ -15,4 +15,11 @@ interface WorkTaskRepositoryInterface
     public function save(WorkTask $workTask): bool;
 
     public function delete(WorkTask $workTask): bool;
+
+    public function getSiteIdsByEmployeeIdFromWorkTasks(int $id): array;
+
+    /**
+     * @return WorkTask[]
+     */
+    public function getTasksByEmployeeId(int $employeeId): array;
 }

@@ -38,4 +38,20 @@ class ConstructionSiteRepository implements ConstructionSiteRepositoryInterface
     {
         return $constructionSite->delete();
     }
+
+    /**
+     * @return ConstructionSite[]
+     */
+    public function getSitesByIds(array $siteIds): array
+    {
+        return ConstructionSite::find()->where(['id' => $siteIds])->all() ?? [];
+    }
+
+    /**
+     * @return ConstructionSite[]
+     */
+    public function getSitesByManagerId(int $id): array
+    {
+        return ConstructionSite::find()->where(['manager_id' => $id])->all() ?? [];
+    }
 }

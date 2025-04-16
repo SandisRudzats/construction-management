@@ -107,7 +107,7 @@ export const useEmployeeStore = defineStore('employee', {
           if (index !== -1) {
             this.employees[index] = {
               ...this.employees[index],
-              ...response.data,
+              ...response.data.data,
             }
           }
         } else {

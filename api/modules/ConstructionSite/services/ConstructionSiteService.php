@@ -8,6 +8,10 @@ use api\helpers\RequestValidationHelper;
 use api\modules\ConstructionSite\interfaces\ConstructionSiteRepositoryInterface;
 use api\modules\ConstructionSite\interfaces\ConstructionSiteServiceInterface;
 use api\modules\ConstructionSite\models\ConstructionSite;
+use api\modules\Employee\interfaces\EmployeeRepositoryInterface;
+use api\modules\Employee\models\Employee;
+use api\modules\WorkTask\interfaces\WorkTaskRepositoryInterface;
+use api\modules\WorkTask\models\WorkTask;
 use yii\base\Exception;
 use yii\web\BadRequestHttpException;
 
@@ -15,7 +19,9 @@ readonly class ConstructionSiteService implements ConstructionSiteServiceInterfa
 {
     public function __construct(
         private ConstructionSiteRepositoryInterface $constructionSiteRepository,
-        private RequestValidationHelper $requestValidationHelper
+        private RequestValidationHelper $requestValidationHelper,
+        private EmployeeRepositoryInterface $employeeRepository,
+        private WorkTaskRepositoryInterface $workTaskRepository,
     ) {
     }
 
@@ -93,5 +99,43 @@ readonly class ConstructionSiteService implements ConstructionSiteServiceInterfa
         }
 
         return true;
+    }
+
+    /**
+     * @param int $id
+     * @return WorkTask[]
+     * @throws Exception
+     */
+    public function getSiteWithWorkTasks(int $id): array
+    {
+        $site = $this->constructionSiteRepository->find($id);
+        if (!$site) {
+            throw new Exception('Site not found for work task retrieval.');
+        }
+
+        return $site->workTasks ?? [];
+    }
+
+    /**
+     * @param int $userId
+     * @return ConstructionSite[]
+     * @throws Exception
+     */
+    public function getSitesByIdAndRole(int $userId): array
+    {
+        $employee = $this->employeeRepository->find($userId);
+        if (!$employee) {
+            throw new Exception('Employee not found for site retrieval.');
+        }
+
+        if ($employee->role === Employee::ROLE_ADMIN) {
+            return $this->constructionSiteRepository->findAll();
+        } elseif ($employee->role === Employee::ROLE_EMPLOYEE) {
+            $siteIds = $this->workTaskRepository->getSiteIdsByEmployeeIdFromWorkTasks($employee->id);
+            return $this->constructionSiteRepository->getSitesByIds($siteIds);
+        } else {
+            // Managers
+            return $this->constructionSiteRepository->getSitesByManagerId($employee->id);
+        }
     }
 }

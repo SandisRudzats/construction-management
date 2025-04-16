@@ -10,7 +10,6 @@ use api\modules\ConstructionSite\models\ConstructionSite;
 use Throwable;
 use Yii;
 use yii\base\Exception;
-use yii\data\ActiveDataProvider;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
 use yii\rest\ActiveController;
@@ -40,14 +39,9 @@ class ConstructionSiteController extends ActiveController
             'class' => AccessControl::class,
             'rules' => [
                 [
-                    'actions' => ['create', 'update', 'delete', 'work-tasks', 'my-sites', 'index', 'manager-sites'],
+                    'actions' => ['create', 'update', 'delete', 'site-work-tasks', 'index'],
                     'allow' => true,
                     'roles' => ['@'],
-                ],
-                [
-                    'actions' => ['manager-sites'],
-                    'allow' => true,
-                    'roles' => ['manager', 'admin'],
                 ],
             ],
         ];
@@ -58,10 +52,8 @@ class ConstructionSiteController extends ActiveController
                 'create' => ['POST'],
                 'update' => ['PUT', 'PATCH'],
                 'delete' => ['DELETE'],
-                'work-tasks' => ['GET'],
-                'my-sites' => ['GET'],
+                'site-work-tasks' => ['GET'],
                 'index' => ['GET'],
-                'manager-sites' => ['GET'],
             ],
         ];
 
@@ -132,7 +124,7 @@ class ConstructionSiteController extends ActiveController
     /**
      * @throws ForbiddenHttpException
      */
-    public function actionDelete($id)
+    public function actionDelete(int $id)
     {
         $this->validationHelper->validatePermissionsOrFail(['manageSites']);
 
@@ -155,76 +147,54 @@ class ConstructionSiteController extends ActiveController
         }
     }
 
-    public function actionWorkTasks($id)
+    /**
+     * @throws ForbiddenHttpException
+     * @throws NotFoundHttpException
+     */
+    public function actionSiteWorkTasks(int $id): Response
     {
-        $model = $this->findModel($id);
-        return $model->workTasks;
-    }
+        $this->validationHelper->validatePermissionsOrFail(['manageSites', 'manageOwnSites', 'manageOwnTasks']);
 
-    public function actionMySites()
-    {
-        $userId = Yii::$app->user->id;
-        $dataProvider = new ActiveDataProvider([
-            'query' => ConstructionSite::find()->where(['manager_id' => $userId]),
-        ]);
+        try {
+            $workTasks = $this->constructionSiteService->getSiteWithWorkTasks($id);
 
-        return $dataProvider;
-    }
-
-    public function actionIndex()
-    {
-        $user = Yii::$app->user->identity;
-        if ($user) {
-            if ($user->role === 'admin') {
-                $dataProvider = new ActiveDataProvider([
-                    'query' => ConstructionSite::find(),
-                ]);
-
-                return $dataProvider;
-            } elseif ($user->role === 'employee') {
-                // Get the employee's work tasks and extract the construction site IDs.
-                $workTaskQuery = \api\modules\WorkTask\models\WorkTask::find()->where(['employee_id' => $user->id]);
-                $siteIds = $workTaskQuery->select('construction_site_id')->distinct()->column();
-
-                // If the employee has work tasks, retrieve the associated sites.
-                if (!empty($siteIds)) {
-                    $dataProvider = new ActiveDataProvider([
-                        'query' => ConstructionSite::find()->where(['id' => $siteIds]),
-                    ]);
-                    return $dataProvider;
-                } else {
-                    // If the employee has no work tasks, return an empty dataset.
-                    return new ActiveDataProvider([
-                        'query' => ConstructionSite::find()->where(['id' => null]),
-                    ]);
-                }
-            } else { //For managers
-                $dataProvider = new ActiveDataProvider([
-                    'query' => ConstructionSite::find()->where(['manager_id' => $user->id]),
-                ]);
-                return $dataProvider;
-            }
+            Yii::$app->response->statusCode = 200;
+            return $this->asJson([
+                'success' => true,
+                'data' => $workTasks,
+                'message' => 'Construction site work tasks retrieved successfully.',
+            ]);
+        } catch (Throwable $e) {
+            Yii::$app->response->statusCode = 400;
+            return $this->asJson([
+                'success' => false,
+                'data' => null,
+                'message' => $e->getMessage(),
+            ]);
         }
-        Yii::$app->getResponse()->setStatusCode(403);
-        return ['message' => 'Forbidden'];
     }
 
-    public function actionManagerSites()
+    public function actionIndex(): Response
     {
-        // 1. Get the manager's ID.
-        $managerId = Yii::$app->request->get('managerId');
+        $userId = (int)Yii::$app->user->id;
 
-        if ($managerId === null) {
-            Yii::$app->getResponse()->setStatusCode(400);
-            return ['message' => 'Missing managerId parameter'];
+        try {
+            $sites = $this->constructionSiteService->getSitesByIdAndRole($userId);
+
+            Yii::$app->response->statusCode = 200;
+            return $this->asJson([
+                'success' => true,
+                'data' => $sites,
+                'message' => 'Construction sites retrieved successfully.',
+            ]);
+        } catch (Exception|Throwable $e) {
+            Yii::$app->response->statusCode = 400;
+            return $this->asJson([
+                'success' => false,
+                'data' => null,
+                'message' => $e->getMessage(),
+            ]);
         }
-        // 2.  Find all construction sites managed by this manager.
-        $dataProvider = new ActiveDataProvider([
-            'query' => ConstructionSite::find()->where(['manager_id' => $managerId]),
-        ]);
-
-        // 3.  Return the construction sites.
-        return $dataProvider;
     }
 
     /**

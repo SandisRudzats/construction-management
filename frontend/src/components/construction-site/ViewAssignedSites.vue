@@ -51,15 +51,8 @@
 import { defineComponent, computed, onMounted, reactive, ref } from 'vue';
 import { useConstructionSiteStore } from '@/stores/construction-site';
 import { useUserStore } from '@/stores/user';
-import api from '@/services/api'; // Ensure you import your axios instance
 import { useAccessPassStore } from '@/stores/access-pass';
 import dayjs from 'dayjs'; // make sure dayjs is installed
-
-function formatDateTimeNow(): string {
-  const now = new Date();
-  const pad = (n: number) => n.toString().padStart(2, '0');
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-}
 
 export default defineComponent({
   name: 'ViewAssignedSites',

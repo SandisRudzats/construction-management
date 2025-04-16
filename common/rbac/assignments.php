@@ -25,6 +25,7 @@ return [
     ],
     32 => [
         'admin',
+        'employee',
     ],
     33 => [
         'admin',
