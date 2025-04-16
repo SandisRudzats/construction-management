@@ -41,9 +41,9 @@ readonly class EmployeeService implements EmployeeServiceInterface
         $employee->last_name = $data['last_name'];
         $employee->setPassword($data['password']);
         $employee->role = $data['role'];
-        $employee->birth_date = $data['birth_date'] ?? null;
+        $employee->birth_date = $data['birth_date'];
         $employee->access_level = $data['access_level'] ?? 1;
-        $employee->manager_id = $data['manager_id'] ?? null;
+        $employee->manager_id = $data['manager_id'];
 
         if (!$employee->validate()) {
             throw new Exception('Validation failed: ' . json_encode($employee->errors));

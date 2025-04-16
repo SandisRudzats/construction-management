@@ -174,10 +174,15 @@ export default defineComponent({
     const v$ = useVuelidate(rules, employeeData)
 
     const handleSubmit = async () => {
+      const validationResult = await v$.value.$validate();
+
+      if (!validationResult) {
+        return;
+      }
+
       try {
-        isSubmitting.value = true
-        await employeeStore.createEmployee(employeeData as NewEmployee)
-        successMessage.value = 'Employee created successfully!'
+        isSubmitting.value = true;
+        await employeeStore.createEmployee(employeeData as NewEmployee);
 
         Object.assign(employeeData, {
           first_name: '',
@@ -188,17 +193,17 @@ export default defineComponent({
           access_level: 1,
           role: 'employee',
           manager_id: null,
-        })
+        });
 
-        employeeStore.hasFetched = false
-
-        v$.value.$reset()
+        employeeStore.hasFetched = false;
+        v$.value.$reset();
+        error.value = null;
       } catch (err: any) {
-        error.value = err.message || 'An error occurred.'
+        error.value = err.message || 'An error occurred while creating the employee.';
       } finally {
-        isSubmitting.value = false
+        isSubmitting.value = false;
       }
-    }
+    };
 
     const managers = computed(() => employeeStore.getManagers)
 

@@ -124,7 +124,7 @@ export const useEmployeeStore = defineStore('employee', {
       }
     },
 
-    async createEmployee(newEmployeeData: NewEmployee): Promise<Employee | null | undefined> {
+    async createEmployee(newEmployeeData: NewEmployee): Promise<Employee> {
       this.loading = true
       this.error = null
 
@@ -133,25 +133,24 @@ export const useEmployeeStore = defineStore('employee', {
           'v1/employee/create',
           newEmployeeData,
         )
-        if (response.data.success) {
-          const createdEmployee = response.data.data
-          if (createdEmployee) {
-            this.employees.push(createdEmployee)
-            this.hasFetched = true
-            return createdEmployee
-          }
+        if (response.data.success && response.data.data) {
+          this.employees.push(response.data.data)
+          this.hasFetched = true
+          return response.data.data
         } else {
           this.error = response.data.message
           this.hasFetched = false
-          return null
+          throw new Error(this.error || 'Failed to create employee')
         }
       } catch (err: Error | unknown) {
+        // Handle AxiosError
+        let errorMessage = 'An unknown error occurred while creating Employee'
         if (err instanceof Error) {
-          this.error = err.message
-        } else {
-          this.error = 'An unknown error occurred while updating Employee'
-          return null
+          errorMessage = err.message
         }
+        this.error = errorMessage
+        this.hasFetched = false
+        throw new Error(this.error)
       } finally {
         this.loading = false
       }

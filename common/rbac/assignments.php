@@ -49,6 +49,7 @@ return [
     ],
     39 => [
         'manager',
+        'employee',
     ],
     2 => [
         'employee',
@@ -117,6 +118,9 @@ return [
         'employee',
     ],
     25 => [
+        'employee',
+    ],
+    40 => [
         'employee',
     ],
 ];
