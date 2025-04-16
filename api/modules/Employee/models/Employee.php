@@ -36,6 +36,7 @@ use yii\web\IdentityInterface;
 class Employee extends ActiveRecord implements IdentityInterface
 {
     public const TABLE_NAME = 'employees';
+    public const REQUIRED_FIELDS = ['first_name', 'last_name', 'username', 'role', 'manager_id'];
 
     public static function tableName(): string
     {
@@ -45,7 +46,7 @@ class Employee extends ActiveRecord implements IdentityInterface
     public function rules(): array
     {
         return [
-            [['first_name', 'last_name', 'username', 'role', 'manager_id'], 'required'],
+            [self::REQUIRED_FIELDS, 'required'],
             [['role'], 'string', 'max' => 20],
             [['first_name', 'last_name', 'username', 'password_hash'], 'string', 'max' => 255],
             [['birth_date'], 'date', 'format' => 'Y-m-d'], // Corrected date format

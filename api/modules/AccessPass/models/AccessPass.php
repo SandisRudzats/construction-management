@@ -26,15 +26,17 @@ use yii\db\ActiveQuery;
  */
 class AccessPass extends ActiveRecord
 {
+    public const REQUIRED_FIELDS = ['construction_site_id', 'employee_id', 'work_task_id', 'valid_from', 'valid_to'];
+    public const TABLE_NAME = 'access_pass';
     public static function tableName(): string
     {
-        return 'access_passes';
+        return self::TABLE_NAME;
     }
 
     public function rules(): array
     {
         return [
-            [['construction_site_id', 'employee_id', 'work_task_id', 'valid_from', 'valid_to'], 'required'],
+            [self::REQUIRED_FIELDS, 'required'],
             [['construction_site_id', 'employee_id', 'work_task_id'], 'integer'],
             [['valid_from', 'valid_to'], 'safe'],
             [

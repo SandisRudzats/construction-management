@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace api\modules\Employee\services;
 
+use api\helpers\RequestValidationHelper;
 use api\modules\Employee\interfaces\EmployeeRepositoryInterface;
 use api\modules\Employee\interfaces\EmployeeServiceInterface;
 use api\modules\Employee\models\Employee;
@@ -14,10 +15,12 @@ use yii\db\Exception as DbException;
 use yii\db\StaleObjectException;
 use yii\web\ForbiddenHttpException;
 
-class EmployeeService implements EmployeeServiceInterface
+readonly class EmployeeService implements EmployeeServiceInterface
 {
-    public function __construct(private EmployeeRepositoryInterface $repository)
-    {
+    public function __construct(
+        private EmployeeRepositoryInterface $repository,
+        private RequestValidationHelper $requestValidationHelper
+    ) {
     }
 
     /**
@@ -25,7 +28,7 @@ class EmployeeService implements EmployeeServiceInterface
      */
     public function createEmployee(array $data): Employee
     {
-        $this->validateCreateData($data);
+        $this->requestValidationHelper->validateRequiredFields($data, Employee::REQUIRED_FIELDS);
 
         $employee = new Employee();
         $employee->username = $data['username'];
@@ -55,6 +58,7 @@ class EmployeeService implements EmployeeServiceInterface
      */
     public function updateEmployee(Employee $employee, array $data): ?Employee
     {
+        $this->requestValidationHelper->validateRequiredFields($data, Employee::REQUIRED_FIELDS);
         $auth = Yii::$app->authManager;
 
         $newRoleName = $data['role'] ?? null;
@@ -113,17 +117,9 @@ class EmployeeService implements EmployeeServiceInterface
         return $this->repository->getActiveEmployees();
     }
 
-    /**
-     * @throws Exception
-     */
-    private function validateCreateData(array $data): void
+    public function getEmployeeById(mixed $id): ?Employee
     {
-        $requiredFields = ['username', 'password', 'first_name', 'last_name', 'role'];
-        foreach ($requiredFields as $field) {
-            if (empty($data[$field])) {
-                throw new Exception("Missing required field: $field");
-            }
-        }
+        return $this->repository->find($id);
     }
 
     /**
@@ -137,10 +133,5 @@ class EmployeeService implements EmployeeServiceInterface
             throw new Exception('Invalid role: ' . $roleName);
         }
         $auth->assign($role, $employee->id);
-    }
-
-    public function getEmployeeById(mixed $id): ?Employee
-    {
-        return $this->repository->find($id);
     }
 }

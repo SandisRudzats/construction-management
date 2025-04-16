@@ -4,21 +4,34 @@ declare(strict_types=1);
 
 namespace api\modules\AccessPass\controllers\v1;
 
+use api\helpers\RbacValidationHelper;
 use api\modules\AccessPass\models\AccessPass;
+use api\modules\AccessPass\services\AccessPassService;
 use Yii;
-use yii\db\Exception;
-use yii\rest\ActiveController;
-use yii\web\NotFoundHttpException;
+use yii\base\Exception;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
-use yii\data\ActiveDataProvider;
+use yii\rest\ActiveController;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
+use yii\web\NotFoundHttpException;
+use yii\web\Response;
 
 class AccessPassController extends ActiveController
 {
     public $modelClass = AccessPass::class;
 
-    public function behaviors()
+    public function __construct(
+        $id,
+        $module,
+        private readonly AccessPassService $accessPassService,
+        private readonly RbacValidationHelper $validationHelper,
+        $config = []
+    ) {
+        parent::__construct($id, $module, $config);
+    }
+
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
 
@@ -28,15 +41,15 @@ class AccessPassController extends ActiveController
                 [
                     'actions' => ['index', 'view', 'create', 'update', 'delete'],
                     'allow' => true,
-                    'roles' => ['@'], // Requires any authenticated user.  Adjust as needed.
+                    'roles' => ['@'],
                 ],
                 [
-                    'actions' => ['validate-access'], //addded validate access
+                    'actions' => ['validate-access'],
                     'allow' => true,
                     'verbs' => ['POST']
                 ],
                 [
-                    'actions' => ['update-from-task'], //addded validate access
+                    'actions' => ['update-from-task'],
                     'allow' => true,
                     'verbs' => ['POST']
                 ]
@@ -51,167 +64,108 @@ class AccessPassController extends ActiveController
                 'create' => ['POST'],
                 'update' => ['PUT', 'PATCH'],
                 'delete' => ['DELETE'],
-                'validate-access' => ['POST'], // Added validate-access action
-                'update-from-task' => ['POST'], // Added validate-access action
+                'validate-access' => ['POST'],
+                'update-from-task' => ['POST'],
             ],
         ];
 
         return $behaviors;
     }
 
-    public function actions()
+    public function actions(): array
     {
         $actions = parent::actions();
         unset($actions['index'], $actions['view']);
         return $actions;
     }
 
-    public function actionIndex()
-    {
-        $dataProvider = new ActiveDataProvider([
-            'query' => AccessPass::find(),
-        ]);
-
-        return $dataProvider;
-    }
-
-    public function actionView($id)
-    {
-        $model = $this->findModel($id);
-        return $model;
-    }
-
-    public function actionCreate()
-    {
-        $model = new AccessPass();
-        $model->load(Yii::$app->getRequest()->getBodyParams(), '');
-
-        if ($model->save()) {
-            Yii::$app->getResponse()->setStatusCode(201);
-            return $model;
-        } else {
-            Yii::$app->getResponse()->setStatusCode(422);
-            return ['errors' => $model->getErrors()];
-        }
-    }
-
-    public function actionUpdate($id)
-    {
-        $model = $this->findModel($id);
-        $model->load(Yii::$app->getRequest()->getBodyParams(), '');
-
-        if ($model->save()) {
-            return $model;
-        } else {
-            Yii::$app->getResponse()->setStatusCode(422);
-            return ['errors' => $model->getErrors()];
-        }
-    }
-
-    public function actionDelete($id)
-    {
-        $this->findModel($id)->delete();
-        Yii::$app->getResponse()->setStatusCode(204);
-    }
-
     /**
-     * @throws Exception
+     * @throws ForbiddenHttpException
      */
-    public function actionUpdateFromTask()
+    public function actionCreate(): Response
     {
-        $body = Yii::$app->request->post();
+        $this->validationHelper->validatePermissionsOrFail(['manageEmployees', 'manageOwnTasks']);
+        $data = Yii::$app->request->post();
 
-        $accessPass = AccessPass::find()
-            ->where([
-                'construction_site_id' => $body['construction_site_id'],
-                'employee_id' => $body['employee_id'],
-                'work_task_id' => $body['work_task_id'],
-            ])
-            ->one();
+        try {
+            $accessPass = $this->accessPassService->createAccessPass($data);
 
-        if (!$accessPass) {
-            $accessPass = new AccessPass();
-            $accessPass->construction_site_id = $body['construction_site_id'];
-            $accessPass->employee_id = $body['employee_id'];
-            $accessPass->work_task_id = $body['work_task_id'];
-        }
-
-        $accessPass->valid_from = $body['valid_from'];
-        $accessPass->valid_to = $body['valid_to'];
-
-        if ($accessPass->save()) {
+            Yii::$app->response->statusCode = 201;
             return $this->asJson([
                 'success' => true,
-                'message' => $accessPass->isNewRecord ? 'Access pass created.' : 'Access pass updated.',
                 'data' => $accessPass,
+                'message' => 'Access pass created successfully.',
+            ]);
+        } catch (Exception $e) {
+            Yii::$app->response->statusCode = 400;
+            return $this->asJson([
+                'success' => false,
+                'data' => null,
+                'message' => $e->getMessage(),
             ]);
         }
-
-        return $this->asJson([
-            'success' => false,
-            'message' => 'Failed to save access pass.',
-            'errors' => $accessPass->getErrors(),
-        ]);
     }
 
     /**
-     * Validates if an employee has access to a construction site at a given time.
-     * This is the "modern" access pass validation endpoint.
-     * @return array
+     * @throws \Exception
+     */
+    public function actionUpdateFromTask(): Response
+    {
+        $this->validationHelper->validatePermissionsOrFail(['manageEmployees', 'manageOwnTasks']);
+        $data = Yii::$app->request->post;
+
+        try {
+            $accessPass = $this->accessPassService->updateAccessPassFromTask($data);
+
+            Yii::$app->response->statusCode = 200;
+            return $this->asJson([
+                'success' => true,
+                'data' => $accessPass,
+                'message' => 'Access pass created successfully.',
+            ]);
+        } catch (Exception $e) {
+            Yii::$app->response->statusCode = 400;
+            return $this->asJson([
+                'success' => false,
+                'data' => null,
+                'message' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * @throws ForbiddenHttpException
      * @throws BadRequestHttpException
      */
-    public function actionValidateAccess()
+    public function actionValidateAccess(): Response
     {
-        $request = Yii::$app->request;
-        $employeeId = $request->post('employeeId');
-        $constructionSiteId = $request->post('constructionSiteId');
-        $workTaskId = $request->post('workTaskId');
-        $checkDate = $request->post('checkDate');
+        $this->validationHelper->validatePermissionsOrFail(['viewAssignedSites']);
+        $data = Yii::$app->request->post();
 
-        // Validate input data.  Use Yii's validation features.
-        if (!$employeeId || !$constructionSiteId || !$workTaskId || !$checkDate) {
-            throw new BadRequestHttpException(
-                'Missing required parameters: employeeId, constructionSiteId, workTaskId, and checkDate are required.'
-            );
-        }
-
-        // Convert checkDate to a DateTime object for safe comparison.
         try {
-            $checkDateTime = new \DateTime($checkDate);
-        } catch (\Exception $e) {
-            throw new BadRequestHttpException('Invalid date format for checkDate.  Use YYYY-MM-DD HH:MM:SS.');
-        }
+            $accessPass = $this->accessPassService->validateAccess($data);
 
-        // Query the database to check for a valid access pass.
-        $accessPass = AccessPass::find()
-            ->where([
-                'employee_id' => $employeeId,
-                'construction_site_id' => $constructionSiteId,
-                'work_task_id' => $workTaskId,
-            ])
-            ->andWhere(['<=', 'valid_from', $checkDateTime->format('Y-m-d H:i:s')])
-            ->andWhere(['>=', 'valid_to', $checkDateTime->format('Y-m-d H:i:s')])
-            ->one();
-
-        // Return the appropriate response.
-        if ($accessPass) {
-            return [
+            Yii::$app->response->statusCode = 200;
+            return $this->asJson([
                 'success' => true,
-                'message' => 'Access granted',
-                'data' => ['accessPassId' => $accessPass->id],
-            ];
-        } else {
-            Yii::$app->getResponse()->setStatusCode(403); // 403 Forbidden
-            return [
+                'data' => $accessPass,
+                'message' => 'Access granted.',
+            ]);
+        } catch (Exception $e) {
+            Yii::$app->response->statusCode = 400;
+            return $this->asJson([
                 'success' => false,
-                'message' => 'Access denied',
-            ];
+                'data' => null,
+                'message' => $e->getMessage(),
+            ]);
         }
     }
 
     protected function findModel($id)
     {
-        if (($model = AccessPass::findOne($id)) !== null) {
+        $model = $this->accessPassService->findModel($id);
+
+        if ($model) {
             return $model;
         }
 

@@ -4,33 +4,14 @@ declare(strict_types=1);
 
 namespace api\modules\AccessPass\repositories;
 
-use api\models\AccessPass;
 use api\modules\AccessPass\interfaces\AccessPassRepositoryInterface;
-use Throwable;
+use api\modules\AccessPass\models\AccessPass;
+use DateTime;
+use yii\db\ActiveRecord;
 use yii\db\Exception;
-use yii\db\StaleObjectException;
 
 class AccessPassRepository implements AccessPassRepositoryInterface
 {
-    public function find(int $id): ?AccessPass
-    {
-        return AccessPass::findOne($id);
-    }
-
-    public function findAll(): array
-    {
-        return AccessPass::find()->all();
-    }
-
-    public function findByEmployeeAndSiteAndDate(int $employeeId, int $constructionSiteId, string $date): array
-    {
-        return AccessPass::find()
-            ->where(['employee_id' => $employeeId, 'construction_site_id' => $constructionSiteId])
-            ->andWhere(['<=', 'valid_from', $date])
-            ->andWhere(['>=', 'valid_until', $date])
-            ->all();
-    }
-
     /**
      * @throws Exception
      */
@@ -39,12 +20,33 @@ class AccessPassRepository implements AccessPassRepositoryInterface
         return $accessPass->save();
     }
 
-    /**
-     * @throws Throwable
-     * @throws StaleObjectException
-     */
-    public function delete(AccessPass $accessPass): bool
-    {
-        return $accessPass->delete();
+    public function findByTaskSiteAndEmployee(
+        int $employeeId,
+        int $siteId,
+        int $workTaskId
+    ): AccessPass|ActiveRecord|null {
+        return AccessPass::find()
+            ->where([
+                'employee_id' => $employeeId,
+                'construction_site_id' => $siteId,
+                'work_task_id' => $workTaskId,
+            ])->one();
+    }
+
+    public function findPassByParamsAndDate(
+        int $employeeId,
+        int $constructionSiteId,
+        int $workTaskId,
+        DateTime $checkDateTime
+    ): AccessPass|ActiveRecord|null {
+        return AccessPass::find()
+            ->where([
+                'employee_id' => $employeeId,
+                'construction_site_id' => $constructionSiteId,
+                'work_task_id' => $workTaskId,
+            ])
+            ->andWhere(['<=', 'valid_from', $checkDateTime->format('Y-m-d H:i:s')])
+            ->andWhere(['>=', 'valid_to', $checkDateTime->format('Y-m-d H:i:s')])
+            ->one();
     }
 }
