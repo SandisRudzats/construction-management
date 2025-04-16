@@ -64,6 +64,9 @@ class WorkTaskController extends ActiveController
     {
         $actions = parent::actions();
         unset($actions['index']);
+        unset($actions['create']);
+        unset($actions['update']);
+        unset($actions['delete']);
         return $actions;
     }
 
