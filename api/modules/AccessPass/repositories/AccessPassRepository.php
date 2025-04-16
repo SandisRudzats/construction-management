@@ -37,16 +37,17 @@ class AccessPassRepository implements AccessPassRepositoryInterface
         int $employeeId,
         int $constructionSiteId,
         int $workTaskId,
-        DateTime $checkDateTime
+        string $checkDateTime
     ): AccessPass|ActiveRecord|null {
+
         return AccessPass::find()
             ->where([
                 'employee_id' => $employeeId,
                 'construction_site_id' => $constructionSiteId,
                 'work_task_id' => $workTaskId,
             ])
-            ->andWhere(['<=', 'valid_from', $checkDateTime->format('Y-m-d H:i:s')])
-            ->andWhere(['>=', 'valid_to', $checkDateTime->format('Y-m-d H:i:s')])
+            ->andWhere(['<=', 'valid_from', $checkDateTime])
+            ->andWhere(['>=', 'valid_to', $checkDateTime])
             ->one();
     }
 }

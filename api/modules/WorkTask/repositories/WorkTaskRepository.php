@@ -41,7 +41,11 @@ class WorkTaskRepository implements WorkTaskRepositoryInterface
 
     public function getSiteIdsByEmployeeIdFromWorkTasks(int $id): array
     {
-        return WorkTask::find()->where(['employee_id' => $id])->distinct()->column('construction_site_id');
+        return WorkTask::find()
+            ->select('construction_site_id')
+            ->where(['employee_id' => $id])
+            ->distinct()
+            ->column();
     }
 
     /**

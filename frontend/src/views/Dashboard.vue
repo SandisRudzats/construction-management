@@ -103,18 +103,20 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted } from 'vue'
+import { computed, defineComponent, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/services/api'
 import { useUserStore } from '@/stores/user'
 import { useEmployeeStore } from '@/stores/employee.ts'
-// Import the components
 import CreateEmployee from '@/components/employee/CreateEmployee.vue'
 import EditEmployee from '@/components/employee/EditEmployee.vue'
 import EmployeeProfile from '@/components/employee/EmployeeProfile.vue'
 import ManageConstructionSites from '@/components/construction-site/ManageConstructionSites.vue'
 import CreateConstructionSite from '@/components/construction-site/CreateConstructionSite.vue'
 import ViewAssignedSites from '@/components/construction-site/ViewAssignedSites.vue'
+import { useAccessPassStore } from '@/stores/access-pass.ts'
+import { useConstructionSiteStore } from '@/stores/construction-site.ts'
+import { useTaskStore } from '@/stores/task.ts'
 
 export default defineComponent({
   name: 'Dashboard',
@@ -134,6 +136,9 @@ export default defineComponent({
     const showWorkTasksSection = ref(false)
     const userStore = useUserStore()
     const employeeStore = useEmployeeStore()
+    const accessStore = useAccessPassStore()
+    const constructionStore = useConstructionSiteStore()
+    const taskStore = useTaskStore()
     const userRole = computed(() => userStore.user?.role || null)
     const selectedSection = ref<string>('dashboard')
 
@@ -142,8 +147,18 @@ export default defineComponent({
         await api.post('/auth/logout')
         localStorage.removeItem('user')
         userStore.clearUser()
+
+        userStore.$reset()
+        employeeStore.$reset()
+        accessStore.$reset()
+        constructionStore.$reset()
+        taskStore.$reset()
+
         await router.push('/login')
-      } catch (err: any) {
+      } catch (err: Error | unknown) {
+        if (err instanceof Error) {
+          return err.message
+        }
         await router.push('/dashboard')
       }
     }
@@ -212,7 +227,7 @@ export default defineComponent({
       showWorkTasksSection,
       toggleWorkTasksSection,
       selectedSection,
-      employeeStore
+      employeeStore,
     }
   },
 })

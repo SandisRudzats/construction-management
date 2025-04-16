@@ -18,13 +18,10 @@ class LoginForm extends Model
     public string $username;
     public string $password;
 
-    private ?Employee $user = null;
-
     public function rules(): array
     {
         return [
             [['username', 'password'], 'required'],
-//            ['password'],
         ];
     }
 

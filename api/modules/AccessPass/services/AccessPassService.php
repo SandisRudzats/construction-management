@@ -97,7 +97,7 @@ readonly class AccessPassService implements AccessPassServiceInterface
             throw new BadRequestHttpException('Missing required parameters.');
         }
 
-        $checkDateTime = new DateTime($data['checkDate']);
+        $checkDateTime = $data['checkDate'];
         $employeeId = (int)$data['employeeId'];
         $constructionSiteId = (int)$data['constructionSiteId'];
         $workTaskId = (int)$data['workTaskId'];

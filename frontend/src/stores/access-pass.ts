@@ -12,13 +12,6 @@ export interface AccessPass {
   valid_to: string
 }
 
-interface ValidateAccessPayload {
-  employeeId: number
-  constructionSiteId: number
-  workTaskId: number
-  checkDate: string
-}
-
 export const useAccessPassStore = defineStore('accessPass', {
   state: () => ({
     accessPasses: [] as AccessPass[],
@@ -42,7 +35,7 @@ export const useAccessPassStore = defineStore('accessPass', {
       this.error = null
 
       try {
-        const response = await api.post<ApiResponse<AccessPass>>('v1/access-pass/validate-access', {
+        const response = await api.post('v1/access-pass/validate-access', {
           employeeId,
           constructionSiteId,
           workTaskId,

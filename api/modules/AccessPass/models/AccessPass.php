@@ -27,7 +27,7 @@ use yii\db\ActiveQuery;
 class AccessPass extends ActiveRecord
 {
     public const REQUIRED_FIELDS = ['construction_site_id', 'employee_id', 'work_task_id', 'valid_from', 'valid_to'];
-    public const TABLE_NAME = 'access_pass';
+    public const TABLE_NAME = 'access_passes';
     public static function tableName(): string
     {
         return self::TABLE_NAME;

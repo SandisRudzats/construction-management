@@ -22,7 +22,7 @@ interface AccessPassRepositoryInterface
         int $employeeId,
         int $constructionSiteId,
         int $workTaskId,
-        DateTime $checkDateTime
+        string $checkDateTime
     ): AccessPass|ActiveRecord|null;
 
 }

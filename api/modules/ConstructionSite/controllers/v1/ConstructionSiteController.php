@@ -185,7 +185,7 @@ class ConstructionSiteController extends ActiveController
             return $this->asJson([
                 'success' => true,
                 'data' => $sites,
-                'message' => 'Construction sites retrieved successfully.',
+                'message' => ' Construction sites retrieved successfully.',
             ]);
         } catch (Exception|Throwable $e) {
             Yii::$app->response->statusCode = 400;
