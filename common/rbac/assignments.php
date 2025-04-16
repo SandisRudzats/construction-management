@@ -13,9 +13,11 @@ return [
     ],
     29 => [
         'admin',
+        'employee',
     ],
     30 => [
         'manager',
+        'employee',
     ],
     31 => [
         'admin',

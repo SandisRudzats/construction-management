@@ -84,6 +84,7 @@ class EmployeeController extends ActiveController
         $employee->last_name = $data['last_name'];
         $employee->setPassword($data['password']); // Use setPassword for hashing.
         $employee->role = $data['role'];
+        $employee->birth_date = $data['birth_date'];
         $employee->access_level = $data['access_level'] ?? 1; //default access level
         $employee->manager_id = $data['manager_id'];
 

@@ -25,8 +25,12 @@
         </div>
         <div class="site-edit" v-else>
           <div class="detail-row">
-            <strong>Manager ID:</strong>
-            <input type="number" v-model="editedSite.manager_id" />
+            <strong>Manager:</strong>
+            <select v-model="editedSite.manager_id">
+              <option v-for="manager in managers" :key="manager.id" :value="manager.id">
+                {{ manager.first_name }} {{ manager.last_name }}
+              </option>
+            </select>
             <span v-if="v$.editedSite.manager_id.$error" class="error-message">
               {{ v$.editedSite.manager_id.$errors[0].$message }}
             </span>
@@ -86,7 +90,7 @@
               </option>
             </select>
             <span v-if="v$.newTask.employee_id.$error" class="error-message">
-              {{ v$.newTask.employee_id.$errors[0].$message }}
+              Choose an employee
             </span>
           </div>
           <div class="detail-row">
@@ -112,87 +116,91 @@
 
         <table class="work-tasks-table">
           <thead>
-          <tr>
-            <th>ID</th>
-            <th>Employee</th>
-            <th>Description</th>
-            <th>Start Date</th>
-            <th>End Date</th>
-            <th>Actions</th>
-          </tr>
+            <tr>
+              <th>ID</th>
+              <th>Employee</th>
+              <th>Description</th>
+              <th>Start Date</th>
+              <th>End Date</th>
+              <th>Actions</th>
+            </tr>
           </thead>
           <tbody>
-          <tr v-for="task in site.workTasks" :key="task.id">
-            <td>{{ task.id }}</td>
-            <td v-if="editingTaskId !== task.id">
-              {{ employeeStore.getEmployees.find((e) => e.id === task.employee_id)?.first_name }}
-            </td>
-            <td v-else>
-              <select v-model="editedTask.employee_id">
-                <option
-                  v-for="employee in getFilteredEmployees(
+            <tr v-for="task in site.workTasks" :key="task.id">
+              <td>{{ task.id }}</td>
+              <td v-if="editingTaskId !== task.id">
+                {{ employeeStore.getEmployees.find((e) => e.id === task.employee_id)?.first_name }}
+              </td>
+              <td v-else>
+                <select v-model="editedTask.employee_id">
+                  <option
+                    v-for="employee in getFilteredEmployees(
                       site.manager_id,
                       site.required_access_level,
                     )"
-                  :key="employee.id"
-                  :value="employee.id"
-                >
-                  {{ employee.first_name }} {{ employee.last_name }} | access level : {{ employee.access_level}}
-                </option>
-                <option
-                  v-if="
+                    :key="employee.id"
+                    :value="employee.id"
+                  >
+                    {{ employee.first_name }} {{ employee.last_name }} | access level :
+                    {{ employee.access_level }}
+                  </option>
+                  <option
+                    v-if="
                       getFilteredEmployees(site.manager_id, site.required_access_level).length === 0
                     "
-                  disabled
-                >
-                  No suitable employees
-                </option>
-              </select>
-              <span v-if="v$.editedTask.employee_id.$error" class="error-message">
+                    disabled
+                  >
+                    No suitable employees
+                  </option>
+                </select>
+                <span v-if="v$.editedTask.employee_id.$error" class="error-message">
                   {{ v$.editedTask.employee_id.$errors[0].$message }}
                 </span>
-            </td>
-            <td v-if="editingTaskId !== task.id">{{ task.description }}</td>
-            <td v-else><input type="text" v-model="editedTask.description" />
-              <span v-if="v$.editedTask.description.$error" class="error-message">
+              </td>
+              <td v-if="editingTaskId !== task.id">{{ task.description }}</td>
+              <td v-else>
+                <input type="text" v-model="editedTask.description" />
+                <span v-if="v$.editedTask.description.$error" class="error-message">
                   {{ v$.editedTask.description.$errors[0].$message }}
                 </span>
-            </td>
-            <td v-if="editingTaskId !== task.id">{{ task.start_date }}</td>
-            <td v-else><input type="date" v-model="editedTask.start_date" />
-              <span v-if="v$.editedTask.start_date.$error" class="error-message">
+              </td>
+              <td v-if="editingTaskId !== task.id">{{ task.start_date }}</td>
+              <td v-else>
+                <input type="date" v-model="editedTask.start_date" />
+                <span v-if="v$.editedTask.start_date.$error" class="error-message">
                   {{ v$.editedTask.start_date.$errors[0].$message }}
                 </span>
-            </td>
-            <td v-if="editingTaskId !== task.id">{{ task.end_date }}</td>
-            <td v-else><input type="date" v-model="editedTask.end_date" />
-              <span v-if="v$.editedTask.end_date.$error" class="error-message">
+              </td>
+              <td v-if="editingTaskId !== task.id">{{ task.end_date }}</td>
+              <td v-else>
+                <input type="date" v-model="editedTask.end_date" />
+                <span v-if="v$.editedTask.end_date.$error" class="error-message">
                   {{ v$.editedTask.end_date.$errors[0].$message }}
                 </span>
-            </td>
-            <td>
-              <button
-                v-if="
+              </td>
+              <td>
+                <button
+                  v-if="
                     editingTaskId !== task.id &&
                     (userStore.user.role === 'admin' || isTaskManager(site, task.employee_id))
                   "
-                @click="editTask(task)"
-                class="action-button"
-              >
-                Edit
-              </button>
-              <button
-                v-else-if="editingTaskId === task.id"
-                @click="updateTask(site.id, task)"
-                class="action-button save-button"
-              >
-                Save
-              </button>
-              <button @click="deleteTask(site.id, task.id)" class="action-button delete-button">
-                Delete Task
-              </button>
-            </td>
-          </tr>
+                  @click="editTask(task)"
+                  class="action-button"
+                >
+                  Edit
+                </button>
+                <button
+                  v-else-if="editingTaskId === task.id"
+                  @click="updateTask(site.id, task)"
+                  class="action-button save-button"
+                >
+                  Save
+                </button>
+                <button @click="deleteTask(site.id, task.id)" class="action-button delete-button">
+                  Delete Task
+                </button>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -202,14 +210,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, reactive, computed, ref } from 'vue'
+import { computed, defineComponent, onMounted, reactive, ref } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { useEmployeeStore } from '@/stores/employee'
-import { useConstructionSiteStore, type ConstructionSite } from '@/stores/construction-site'
+import { type ConstructionSite, useConstructionSiteStore } from '@/stores/construction-site'
 import { useTaskStore, type WorkTask } from '@/stores/task'
 import { useAccessPassStore } from '@/stores/access-pass.ts'
 import useVuelidate from '@vuelidate/core'
-import { required, numeric, helpers, minValue } from '@vuelidate/validators'
+import { minValue, numeric, required } from '@vuelidate/validators'
 
 export default defineComponent({
   name: 'ManageConstructionSites',
@@ -257,19 +265,19 @@ export default defineComponent({
 
     const rules = computed(() => ({
       editedSite: {
-        manager_id: { required, numeric },
+        manager_id: { required, numeric, minValue: minValue(1) },
         location: { required },
-        area: { required, numeric, minValue: minValue(0) },
-        required_access_level: { required, numeric, minValue: minValue(0) },
+        area: { required, numeric, minValue: minValue(1) },
+        required_access_level: { required, numeric, minValue: minValue(1) },
       },
       newTask: {
-        employee_id: { required, numeric },
+        employee_id: { required, numeric, minValue: minValue(1) },
         description: { required },
         start_date: { required },
         end_date: { required },
       },
       editedTask: {
-        employee_id: { required, numeric },
+        employee_id: { required, numeric, minValue: minValue(1) },
         description: { required },
         start_date: { required },
         end_date: { required },
@@ -286,6 +294,7 @@ export default defineComponent({
     const editSite = (site: ConstructionSite) => {
       editingSiteId.value = site.id
       Object.assign(editedSite, site)
+      v$.value.$reset()
     }
 
     const updateSite = async (site: ConstructionSite) => {
@@ -313,6 +322,8 @@ export default defineComponent({
         start_date: new Date().toISOString().slice(0, 10),
         end_date: new Date().toISOString().slice(0, 10),
       })
+
+      v$.value.$reset()
     }
 
     const addTask = async (site: ConstructionSite) => {
@@ -342,6 +353,8 @@ export default defineComponent({
         valid_to: createdTask.end_date,
       })
 
+      v$.value.$reset()
+
       return {
         task: createdTask,
         accessPass: createdAccessPass,
@@ -351,6 +364,8 @@ export default defineComponent({
     const editTask = (task: WorkTask) => {
       editingTaskId.value = task.id
       Object.assign(editedTask, task)
+
+      v$.value.$reset()
     }
 
     const updateTask = async (siteId: number, task: WorkTask) => {
@@ -369,7 +384,7 @@ export default defineComponent({
 
         editingTaskId.value = null
 
-        const index = taskStore.tasks.findIndex(t => t.id === response.id)
+        const index = taskStore.tasks.findIndex((t) => t.id === response.id)
         if (index !== -1) {
           taskStore.tasks.splice(index, 1, response)
         } else {
@@ -400,6 +415,10 @@ export default defineComponent({
       return userStore.user.id === site.manager_id
     }
 
+    const managers = computed(() => {
+      return employeeStore.getEmployees.filter((e) => e.role === 'manager')
+    })
+
     onMounted(async () => {
       if (!employeeStore.hasFetched) {
         await employeeStore.fetchEmployees()
@@ -429,6 +448,7 @@ export default defineComponent({
       getFilteredEmployees,
       isTaskManager,
       v$,
+      managers,
     }
   },
 })

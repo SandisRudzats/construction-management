@@ -2,11 +2,9 @@
   <div class="view-employees-view">
     <h2>Edit Employees</h2>
 
-    <!-- Show loading indicator or error message if applicable -->
     <div v-if="loading" class="loading-indicator">Loading employees...</div>
     <div v-if="error" class="error-message">{{ error }}</div>
 
-    <!-- Show the employee list only for admins and managers -->
     <div v-if="canViewEmployees">
       <div v-if="employees && employees.length > 0" class="employee-list">
         <table class="employee-table">
@@ -27,18 +25,46 @@
           <tbody>
           <tr v-for="employee in employees" :key="employee.id">
             <td>{{ employee.id }}</td>
-            <td><input v-model="employee.first_name" type="text" :disabled="!canEditEmployees" /></td>
-            <td><input v-model="employee.last_name" type="text" :disabled="!canEditEmployees" /></td>
-            <td><input v-model="employee.birth_date" type="date" :disabled="!canEditEmployees" /></td>
-            <td><input v-model="employee.username" type="text" :disabled="!canEditEmployees" /></td>
+            <td>
+              <input v-model="employee.first_name" type="text" :disabled="!canEditEmployees" />
+              <span v-if="employeeVuelidate(employee.id)?.first_name.$error" class="error-message">
+                  {{ employeeVuelidate(employee.id)?.first_name.$errors[0].$message }}
+                </span>
+            </td>
+            <td>
+              <input v-model="employee.last_name" type="text" :disabled="!canEditEmployees" />
+              <span v-if="employeeVuelidate(employee.id)?.last_name.$error" class="error-message">
+                  {{ employeeVuelidate(employee.id)?.last_name.$errors[0].$message }}
+                </span>
+            </td>
+            <td>
+              <input v-model="employee.birth_date" type="date" :disabled="!canEditEmployees" />
+              <span v-if="employeeVuelidate(employee.id)?.birth_date.$error" class="error-message">
+                  {{ employeeVuelidate(employee.id)?.birth_date.$errors[0].$message }}
+                </span>
+            </td>
+            <td>
+              <input v-model="employee.username" type="text" :disabled="!canEditEmployees" />
+              <span v-if="employeeVuelidate(employee.id)?.username.$error" class="error-message">
+                  {{ employeeVuelidate(employee.id)?.username.$errors[0].$message }}
+                </span>
+            </td>
             <td>
               <select v-model="employee.role" :disabled="!canEditEmployees">
                 <option value="admin">Admin</option>
                 <option value="manager">Manager</option>
                 <option value="employee">Employee</option>
               </select>
+              <span v-if="employeeVuelidate(employee.id)?.role.$error" class="error-message">
+                  {{ employeeVuelidate(employee.id)?.role.$errors[0].$message }}
+                </span>
             </td>
-            <td><input v-model="employee.access_level" type="number" :disabled="!canEditEmployees" /></td>
+            <td>
+              <input v-model="employee.access_level" type="number" :disabled="!canEditEmployees" />
+              <span v-if="employeeVuelidate(employee.id)?.access_level.$error" class="error-message">
+                  {{ employeeVuelidate(employee.id)?.access_level.$errors[0].$message }}
+                </span>
+            </td>
             <td>
               <select v-model="employee.manager_id" :disabled="!canEditEmployees">
                 <option value="">Select Manager</option>
@@ -46,6 +72,9 @@
                   {{ manager.first_name }} {{ manager.last_name }}
                 </option>
               </select>
+              <span v-if="employeeVuelidate(employee.id)?.manager_id.$error" class="error-message">
+                  {{ employeeVuelidate(employee.id)?.manager_id.$errors[0].$message }}
+                </span>
             </td>
             <td><input v-model="employee.active" type="checkbox" :disabled="!canEditEmployees" /></td>
             <td v-if="canEditEmployees">
@@ -58,57 +87,107 @@
       <div v-else-if="!loading && !error" class="no-employees-message">No employees found.</div>
     </div>
 
-    <!-- Message when the user doesn't have permission to view employees -->
     <div v-else>
       <p>You do not have permission to view employees.</p>
     </div>
   </div>
 </template>
 
-
 <script lang="ts">
-import { defineComponent, onMounted, computed } from 'vue';
-import {useEmployeeStore} from "@/stores/employee.ts";
-import {useUserStore} from "@/stores/user.ts";
-import type {Employee} from "@/stores/employee.ts";
+import { defineComponent, onMounted, computed, ref } from 'vue';
+import { useEmployeeStore, type Employee } from '@/stores/employee.ts';
+import { useUserStore } from '@/stores/user.ts';
+import useVuelidate from '@vuelidate/core';
+import {required, numeric, minValue} from '@vuelidate/validators';
+
+interface EmployeeValidationRules {
+  first_name: { required: typeof required };
+  last_name: { required: typeof required };
+  birth_date: { required: typeof required };
+  username: { required: typeof required };
+  role: { required: typeof required };
+  access_level: { required: typeof required; numeric: typeof numeric };
+  manager_id: { required: typeof required };
+}
 
 export default defineComponent({
   name: 'EditEmployeesView',
   setup() {
-    const employeeStore = useEmployeeStore()
-    const userStore = useUserStore()
+    const employeeStore = useEmployeeStore();
+    const userStore = useUserStore();
     const canEditEmployees = computed(() => userStore.user?.role === 'admin');
-    const canViewEmployees = computed(() => ['admin', 'manager'].includes(userStore.user?.role));
+    const canViewEmployees = computed(() => {
+      return ['admin', 'manager'].includes(userStore.user?.role ?? '');
+    });
 
     onMounted(() => {
       if (!employeeStore.hasFetched) {
-        employeeStore.fetchEmployees()
+        employeeStore.fetchEmployees();
       }
-    })
+    });
 
     const employees = computed(() => {
-      const user = userStore.user
-      if (user?.role === 'manager' && user.id !== null) {
-        return employeeStore.getEmployeesByManagerId(user.id)
+      const user = userStore.user;
+      if (user?.role === 'manager' && user.id !== null && user.id !== undefined) {
+        return employeeStore.getEmployeesByManagerId(user.id);
       }
-      return employeeStore.employees
-    })
+      return employeeStore.employees;
+    });
 
-    const { loading, error } = employeeStore
+    const { loading, error } = employeeStore;
 
     const managers = computed(() => employeeStore.getManagers);
 
-    // Refactor updateEmployee to use store's updateEmployee method
+    const employeeValidations = ref<{ [key: number]: any }>({});
+
+    const employeeVuelidate = (employeeId: number) => {
+      if (!employeeValidations.value[employeeId]) {
+        const rules = {
+          first_name: { required },
+          last_name: { required },
+          birth_date: { required },
+          username: { required },
+          role: { required },
+          access_level: { required, numeric, minValue: minValue(1) },
+          manager_id: { required },
+        };
+
+        const employee = employees.value.find((e) => e.id === employeeId);
+        const state = employee
+          ? employee
+          : {
+            first_name: '',
+            last_name: '',
+            birth_date: '',
+            username: '',
+            role: '',
+            access_level: 0,
+            manager_id: '',
+          };
+
+        employeeValidations.value[employeeId] = useVuelidate(rules, state);
+      }
+      return employeeValidations.value[employeeId];
+    };
+
     const updateEmployee = async (id: number, updatedData: Employee) => {
       try {
-        await employeeStore.updateEmployee(id, updatedData)
-        console.log('Employee updated successfully.')
-      } catch (err) {
-        console.error('Failed to update employee:', err)
-      }
-    }
+        const v$ = employeeVuelidate(id);
+        if (!v$) return;
+        const validationResult = await v$.$validate();
+        if (!validationResult) return;
 
-    console.log(employees)
+        if (!updatedData.birth_date) {
+          updatedData.birth_date = '';
+        }
+
+        await employeeStore.updateEmployee(id, updatedData);
+        console.log('Employee updated successfully.');
+      } catch (err) {
+        console.error('Failed to update employee:', err);
+      }
+    };
+
     return {
       employees,
       loading,
@@ -116,10 +195,11 @@ export default defineComponent({
       managers,
       updateEmployee,
       canEditEmployees,
-      canViewEmployees
-    }
+      canViewEmployees,
+      employeeVuelidate,
+    };
   },
-})
+});
 </script>
 
 <style scoped>
