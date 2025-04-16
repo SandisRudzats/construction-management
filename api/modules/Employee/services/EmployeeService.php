@@ -7,66 +7,140 @@ namespace api\modules\Employee\services;
 use api\modules\Employee\interfaces\EmployeeRepositoryInterface;
 use api\modules\Employee\interfaces\EmployeeServiceInterface;
 use api\modules\Employee\models\Employee;
-use yii\db\Exception;
+use Throwable;
+use Yii;
+use yii\base\Exception;
+use yii\db\Exception as DbException;
+use yii\db\StaleObjectException;
+use yii\web\ForbiddenHttpException;
 
 class EmployeeService implements EmployeeServiceInterface
 {
-    private EmployeeRepositoryInterface $employeeRepository;
-
-    public function __construct(EmployeeRepositoryInterface $employeeRepository)
+    public function __construct(private EmployeeRepositoryInterface $repository)
     {
-        $this->employeeRepository = $employeeRepository;
-    }
-
-    public function findEmployee(int $id): ?Employee
-    {
-        return $this->employeeRepository->find($id);
-    }
-
-    public function findAllEmployees(): array
-    {
-        return $this->employeeRepository->findAll();
-    }
-
-    public function findEmployeeByUsername(string $username): ?Employee
-    {
-        return $this->employeeRepository->findByUsername($username);
     }
 
     /**
-     * @throws Exception
+     * @throws Exception|DbException
      */
-    public function createEmployee(array $data): ?Employee
+    public function createEmployee(array $data): Employee
     {
+        $this->validateCreateData($data);
+
         $employee = new Employee();
-        $employee->load($data, ''); // Load attributes from the array
-        if ($employee->save()) {
-            return $employee;
+        $employee->username = $data['username'];
+        $employee->first_name = $data['first_name'];
+        $employee->last_name = $data['last_name'];
+        $employee->setPassword($data['password']);
+        $employee->role = $data['role'];
+        $employee->birth_date = $data['birth_date'] ?? null;
+        $employee->access_level = $data['access_level'] ?? 1;
+        $employee->manager_id = $data['manager_id'] ?? null;
+
+        if (!$employee->validate()) {
+            throw new Exception('Validation failed: ' . json_encode($employee->errors));
         }
-        return null;
+
+        if (!$this->repository->save($employee)) {
+            throw new Exception('Failed to save employee.');
+        }
+
+        $this->assignRole($employee, $data['role']);
+
+        return $employee;
     }
 
     /**
-     * @throws Exception
+     * @throws Exception | \Exception
      */
-    public function updateEmployee(int $id, array $data): ?Employee
+    public function updateEmployee(Employee $employee, array $data): ?Employee
     {
-        $employee = $this->employeeRepository->find($id);
-        if ($employee) {
-            $employee->load($data, '');
-            if ($employee->save()) {
-                return $employee;
+        $auth = Yii::$app->authManager;
+
+        $newRoleName = $data['role'] ?? null;
+        if ($newRoleName && $newRoleName !== $employee->role) {
+            $oldRole = $auth->getRole($employee->role);
+            if ($oldRole) {
+                $auth->revoke($oldRole, $employee->id);
             }
+
+            $newRole = $auth->getRole($newRoleName);
+            if ($newRole === null) {
+                throw new Exception('Invalid role: ' . $newRoleName);
+            }
+            $auth->assign($newRole, $employee->id);
+            $employee->role = $newRoleName;
         }
-        return null;
+
+        $employee->load($data, '');
+        if (!$employee->validate()) {
+            throw new Exception('Validation failed: ' . json_encode($employee->errors));
+        }
+
+        if (!$this->repository->save($employee)) {
+            throw new Exception('Failed to update employee.');
+        }
+
+        return $employee;
     }
 
+    /**
+     * @throws Throwable | Exception | StaleObjectException | ForbiddenHttpException
+     */
     public function deleteEmployee(int $id): bool
     {
-        $employee = $this->employeeRepository->find($id);
-        if ($employee) {
-            return $this->employeeRepository->delete($employee);
+        $employee = $this->repository->find($id);
+
+        if (!$employee) {
+            throw new Exception('Employee not found.');
         }
-        return false;
+        if (!Yii::$app->user->can('deleteEmployee', ['employee' => $employee])) {
+            throw new ForbiddenHttpException("You don't have permission to delete this employee.");
+        }
+
+        if (!$this->repository->delete($employee)) {
+            throw new Exception('Failed to delete employee.');
+        }
+
+        return true;
+    }
+
+    /**
+     * @return Employee[]
+     */
+    public function getActiveEmployees(): array
+    {
+        return $this->repository->getActiveEmployees();
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function validateCreateData(array $data): void
+    {
+        $requiredFields = ['username', 'password', 'first_name', 'last_name', 'role'];
+        foreach ($requiredFields as $field) {
+            if (empty($data[$field])) {
+                throw new Exception("Missing required field: $field");
+            }
+        }
+    }
+
+    /**
+     * @throws Exception | \Exception
+     */
+    private function assignRole(Employee $employee, string $roleName): void
+    {
+        $auth = Yii::$app->authManager;
+        $role = $auth->getRole(strtolower($roleName));
+        if ($role === null) {
+            throw new Exception('Invalid role: ' . $roleName);
+        }
+        $auth->assign($role, $employee->id);
+    }
+
+    public function getEmployeeById(mixed $id): ?Employee
+    {
+        return $this->repository->find($id);
     }
 }

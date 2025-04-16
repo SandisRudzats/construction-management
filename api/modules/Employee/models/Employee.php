@@ -75,16 +75,6 @@ class Employee extends ActiveRecord implements IdentityInterface
         ];
     }
 
-    public function getWorkTasks(): ActiveQuery
-    {
-        return $this->hasMany(WorkTask::class, ['employee_id' => 'id']);
-    }
-
-    public function getAccessPasses(): ActiveQuery
-    {
-        return $this->hasMany(AccessPass::class, ['employee_id' => 'id']);
-    }
-
     public static function findIdentity($id): ?IdentityInterface
     {
         return static::findOne($id);
@@ -139,4 +129,13 @@ class Employee extends ActiveRecord implements IdentityInterface
         return $this->hasMany(self::class, ['manager_id' => 'id']);
     }
 
+    public function getWorkTasks(): ActiveQuery
+    {
+        return $this->hasMany(WorkTask::class, ['employee_id' => 'id']);
+    }
+
+    public function getAccessPasses(): ActiveQuery
+    {
+        return $this->hasMany(AccessPass::class, ['employee_id' => 'id']);
+    }
 }

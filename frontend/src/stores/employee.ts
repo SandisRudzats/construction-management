@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import api from '@/services/api'
+import { type ApiResponse } from '@/interfaces/ApiResponse.ts'
 
 export interface Employee {
   id: number
@@ -74,23 +75,23 @@ export const useEmployeeStore = defineStore('employee', {
     async fetchEmployees() {
       if (this.hasFetched) return
 
-      console.log('this place')
       this.loading = true
       this.error = null
       try {
-        const response = await api.get('v1/employee/active-employees')
-        console.log('response')
-        if (response.status === 200 && response?.data) {
-          console.log('in response', response)
-          this.employees = response.data
+        const response = await api.get<ApiResponse<Employee[]>>('v1/employee/active-employees')
+        if (response.data.success) {
+          this.employees = response.data.data || []
           this.hasFetched = true
         } else {
-          console.log('error')
-          this.error = 'No employees data found.'
+          this.error = response.data.message
           this.hasFetched = false
         }
-      } catch (err: any) {
-        this.error = err.message || 'An error occurred.'
+      } catch (err: Error | unknown) {
+        if (err instanceof Error) {
+          this.error = err.message
+        } else {
+          this.error = 'An unknown error occurred'
+        }
       } finally {
         this.loading = false
       }
@@ -101,7 +102,7 @@ export const useEmployeeStore = defineStore('employee', {
       this.error = null
       try {
         const response = await api.put(`v1/employee/${id}`, updatedData)
-        if (response.status === 200) {
+        if (response.data.success) {
           const index = this.employees.findIndex((e) => e.id === id)
           if (index !== -1) {
             this.employees[index] = {
@@ -109,56 +110,51 @@ export const useEmployeeStore = defineStore('employee', {
               ...response.data,
             }
           }
-          console.log('Employee updated successfully:', response.data)
         } else {
-          this.error = 'Failed to update employee.'
-          console.error('Failed to update employee:', response.data)
+          this.error = response.data.message
         }
-      } catch (err: any) {
+      } catch (err: Error | unknown) {
         if (err instanceof Error) {
           this.error = err.message
         } else {
-          this.error = 'An error occurred while updating employee.'
+          this.error = 'An unknown error occurred while updating Employee'
         }
-        console.error(err)
       } finally {
         this.loading = false
       }
     },
 
-    async addEmployeeUser(newEmployeeData: NewEmployee): Promise<Employee | null> {
+    async createEmployee(newEmployeeData: NewEmployee): Promise<Employee | null | undefined> {
       this.loading = true
       this.error = null
 
       try {
-        const response = await api.post('v1/employee/create', newEmployeeData)
-
-        if (response.status === 201 || response.status === 200) {
-          const createdEmployee: Employee = response.data
-          this.employees.push(createdEmployee)
-          return createdEmployee
+        const response = await api.post<ApiResponse<Employee>>(
+          'v1/employee/create',
+          newEmployeeData,
+        )
+        if (response.data.success) {
+          const createdEmployee = response.data.data
+          if (createdEmployee) {
+            this.employees.push(createdEmployee)
+            this.hasFetched = true
+            return createdEmployee
+          }
+        } else {
+          this.error = response.data.message
+          this.hasFetched = false
+          return null
         }
-
-        return null
-      } catch (err: any) {
-        this.error = err.response?.data?.message || 'Failed to add employee.'
-        return null
+      } catch (err: Error | unknown) {
+        if (err instanceof Error) {
+          this.error = err.message
+        } else {
+          this.error = 'An unknown error occurred while updating Employee'
+          return null
+        }
       } finally {
         this.loading = false
       }
-    },
-
-    clearEmployees() {
-      this.employees = []
-      this.hasFetched = false
-    },
-
-    addEmployee(employee: Employee) {
-      this.employees.push(employee)
-    },
-
-    setEmployees(employees: Employee[]) {
-      this.employees = employees
     },
   },
 })

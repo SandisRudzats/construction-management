@@ -52,6 +52,7 @@
           placeholder="Username"
           required
           type="text"
+          autocomplete="username"
         />
         <div v-if="v$.username.$error" class="error-message">
           {{ v$.username.$errors[0].$message }}
@@ -66,6 +67,7 @@
           placeholder="Password"
           required
           type="password"
+          autocomplete="current-password"
         />
         <div v-if="v$.password.$error" class="error-message">
           {{ v$.password.$errors[0].$message }}
@@ -174,7 +176,7 @@ export default defineComponent({
     const handleSubmit = async () => {
       try {
         isSubmitting.value = true
-        await employeeStore.addEmployeeUser(employeeData as NewEmployee)
+        await employeeStore.createEmployee(employeeData as NewEmployee)
         successMessage.value = 'Employee created successfully!'
 
         Object.assign(employeeData, {

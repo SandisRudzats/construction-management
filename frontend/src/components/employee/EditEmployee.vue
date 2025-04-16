@@ -106,7 +106,7 @@ interface EmployeeValidationRules {
   birth_date: { required: typeof required };
   username: { required: typeof required };
   role: { required: typeof required };
-  access_level: { required: typeof required; numeric: typeof numeric };
+  access_level: { required: typeof required; numeric: typeof numeric; minValue: typeof minValue };
   manager_id: { required: typeof required };
 }
 
@@ -142,7 +142,7 @@ export default defineComponent({
 
     const employeeVuelidate = (employeeId: number) => {
       if (!employeeValidations.value[employeeId]) {
-        const rules = {
+        const rules: EmployeeValidationRules = {
           first_name: { required },
           last_name: { required },
           birth_date: { required },

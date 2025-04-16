@@ -18,7 +18,6 @@ class AuthController extends Controller
         $id,
         $module,
         private AuthServiceInterface $authService,
-        private EmployeeServiceInterface $employeeService,
         $config = []
     ) {
         parent::__construct($id, $module, $config);

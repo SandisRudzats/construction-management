@@ -24,7 +24,7 @@ class LoginForm extends Model
     {
         return [
             [['username', 'password'], 'required'],
-            ['password', 'validatePassword'],
+//            ['password'],
         ];
     }
 
@@ -34,28 +34,5 @@ class LoginForm extends Model
             'username' => Yii::t('app', 'Username or Email'),
             'password' => Yii::t('app', 'Password'),
         ];
-    }
-
-    public function validatePassword(string $attribute, $params): void
-    {
-        if (!$this->hasErrors()) {
-            $user = $this->getUser();
-            if (!$user || $user->password_hash === null || !Yii::$app->security->validatePassword($this->password, $user->password_hash)) {
-                $this->addError($attribute, Yii::t('app', 'Incorrect username or password.'));
-            }
-        }
-    }
-
-    /**
-     * Finds user by [[username]]
-     *
-     * @return Employee|null
-     */
-    public function getUser(): ?Employee
-    {
-        if ($this->user === null) {
-            $this->user = Employee::findOne(['username' => $this->username]);
-        }
-        return $this->user;
     }
 }

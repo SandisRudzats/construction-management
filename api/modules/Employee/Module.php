@@ -10,9 +10,8 @@ class Module extends BaseModule
 {
     public $controllerNamespace = 'api\modules\Employee\controllers\v1';
 
-    public function init()
+    public function init(): void
     {
         parent::init();
-        // Any additional logic for the employee module
     }
 }

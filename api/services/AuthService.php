@@ -23,7 +23,6 @@ class AuthService implements AuthServiceInterface
             return false;
         }
 
-        //  Actual login logic (e.g., setting session, creating token)
         return Yii::$app->user->login($user);
     }
 
