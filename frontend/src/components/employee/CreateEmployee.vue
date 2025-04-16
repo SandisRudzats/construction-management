@@ -183,6 +183,7 @@ export default defineComponent({
       try {
         isSubmitting.value = true;
         await employeeStore.createEmployee(employeeData as NewEmployee);
+        successMessage.value = 'Employee created!'
 
         Object.assign(employeeData, {
           first_name: '',

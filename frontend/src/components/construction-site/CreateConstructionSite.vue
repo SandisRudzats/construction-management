@@ -128,7 +128,6 @@ export default defineComponent({
     const v$ = useVuelidate(rules, constructionSiteData)
 
     const managers = computed(() => {
-      console.log('Managers loaded:', employeeStore.getManagers)
       return employeeStore.getManagers || []
     })
 
@@ -166,7 +165,6 @@ export default defineComponent({
       }
     }
 
-    console.log(managers)
     return {
       constructionSiteData,
       error,
@@ -174,12 +172,11 @@ export default defineComponent({
       successMessage,
       v$,
       isSubmitting,
-      managers, // Use computed property for managers
+      managers,
     }
   },
 })
 </script>
 
 <style scoped>
-/* Your existing styles */
 </style>

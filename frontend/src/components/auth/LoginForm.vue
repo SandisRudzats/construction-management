@@ -1,3 +1,4 @@
+
 <template>
   <div class="login-container">
     <form @submit.prevent="handleLogin" class="login-form">
@@ -27,8 +28,8 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import api from '@/services/api' // Adjust the path if needed
-import { useUserStore } from '@/stores/user' // Adjust the path if needed
+import api from '@/services/api'
+import { useUserStore } from '@/stores/user'
 
 export default defineComponent({
   name: 'LoginForm',
@@ -39,8 +40,7 @@ export default defineComponent({
     const router = useRouter()
     const userStore = useUserStore()
 
-    const handleLogin = async (e: Event) => {
-      e.preventDefault()
+    const handleLogin = async () => {
       error.value = null
 
       if (!username.value.trim() || !password.value.trim()) {
@@ -54,13 +54,11 @@ export default defineComponent({
           password: password.value,
         })
 
-        userStore.setUser(response.data) // Store user data
-        localStorage.setItem('user', JSON.stringify(response.data)) // Persist
-        await router.push('/dashboard') //  your dashboard route
+        userStore.setUser(response.data)
+        localStorage.setItem('user', JSON.stringify(response.data))
+        await router.push('/dashboard')
       } catch (err: any) {
-        const message =
-          err.response?.data?.message || 'Login failed. Please check your credentials.'
-        error.value = message
+        error.value = err.response?.data?.message || 'Login failed. Please check your credentials.'
         console.error('Login Error:', err)
       }
     }
@@ -81,22 +79,20 @@ export default defineComponent({
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: var(--primary-bg); /* Use your CSS variable */
+  background-color: var(--primary-bg);
 }
 
 .login-form {
   width: 90%;
   max-width: 350px;
   padding: 2rem;
-  background-color: var(--card-bg); /* Use your CSS variable */
+  background-color: var(--card-bg);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   border-radius: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition:
-    transform 0.2s ease-in-out,
-    box-shadow 0.2s ease-in-out;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
   backdrop-filter: blur(5px);
 }
 
@@ -108,7 +104,7 @@ export default defineComponent({
 .login-heading {
   font-size: 2rem;
   font-weight: bold;
-  color: var(--primary-text); /* Use your CSS variable */
+  color: var(--primary-text);
   margin-bottom: 2rem;
   text-align: center;
 }
@@ -118,48 +114,42 @@ export default defineComponent({
   margin-bottom: 1.5rem;
   padding: 1rem;
   font-size: 1rem;
-  border: 1px solid var(--border-color); /* Use your CSS variable */
+  border: 1px solid var(--border-color);
   border-radius: 5px;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
-  background-color: var(--input-bg); /* Use your CSS variable */
-  color: var(--primary-text); /* Use your CSS variable */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background-color: var(--input-bg);
+  color: var(--primary-text);
 }
 
 .form-control::placeholder {
-  color: rgba(var(--input-text-rgb), 0.3); /* Use your CSS variable */
+  color: rgba(var(--input-text-rgb), 0.3);
   opacity: 1;
 }
 
 .form-control:focus {
   outline: none;
-  border-color: var(--primary); /* Use your CSS variable */
-  box-shadow: 0 2px 6px rgba(var(--primary-rgb), 0.3); /* Use your CSS variable */
+  border-color: var(--primary);
+  box-shadow: 0 2px 6px rgba(var(--primary-rgb), 0.3);
 }
 
 .btn-dark-gray-confirm:hover {
-  background-color: var(--primary-dark); /* Use your CSS variable */
+  background-color: var(--primary-dark);
   transform: translateY(-2px);
 }
 
 .btn-dark-gray-confirm:active {
-  background-color: color-mix(
-    in srgb,
-    var(--primary-dark),
-    #000000 20%
-  ); /* Use your CSS variable */
+  background-color: color-mix(in srgb, var(--primary-dark), #000000 20%);
   transform: translateY(0);
 }
 
 .error-message {
-  color: var(--accent-red); /* Use your CSS variable */
+  color: var(--accent-red);
   margin-top: 1.5rem;
   text-align: center;
   font-size: 0.9rem;
   padding: 0.5rem;
   background-color: rgba(244, 67, 54, 0.1);
   border-radius: 5px;
-  border: 1px solid var(--accent-red); /* Use your CSS variable */
+  border: 1px solid var(--accent-red);
 }
 </style>

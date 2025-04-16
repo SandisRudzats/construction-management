@@ -44,8 +44,7 @@ export const useUserStore = defineStore('user', {
         permissions: string[]
       } | null,
     ) {
-      // Allow null for logout
-      this.id = userData?.id // Use optional chaining and nullish coalescing
+      this.id = userData?.id
       this.username = userData?.username || null
       this.firstName = userData?.firstName || null
       this.lastName = userData?.lastName || null
@@ -58,7 +57,6 @@ export const useUserStore = defineStore('user', {
       this.permissions = userData?.permissions || []
     },
     clearUser() {
-      // Added clearUser for consistency
       this.id = null
       this.username = null
       this.firstName = null
@@ -105,10 +103,7 @@ export const useUserStore = defineStore('user', {
     }),
   },
   persist: {
-    // Add the persist option here
-    key: 'user', // Optional:  You can change this key
-    storage: localStorage, // Optional:  Use sessionStorage if you prefer
-    // Optional:  If you only want to persist certain state properties, specify them here.
-    // paths: ['id', 'username', 'roles', 'permissions'], // Example: Only persist these
+    key: 'user',
+    storage: localStorage,
   },
 })

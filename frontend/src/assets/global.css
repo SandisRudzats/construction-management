@@ -126,3 +126,38 @@ textarea:hover,
 .btn-dark-gray-confirm {
   background-color: #444;
 }
+
+.work-tasks-table tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.work-tasks-table th {
+  font-weight: bold;
+}
+
+.work-tasks-table th,
+.work-tasks-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color)
+}
+
+.work-tasks-table thead tr {
+  background-color: var(--header-bg);
+  color: var(--header-text);
+}
+
+.work-tasks-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-width: 800px;
+}
+
+.site-container {
+  margin-bottom: 2rem;
+  border: 1px solid #ddd;
+  padding: 1rem;
+}

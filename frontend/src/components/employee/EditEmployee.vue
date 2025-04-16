@@ -98,7 +98,7 @@ import { defineComponent, onMounted, computed, ref } from 'vue';
 import { useEmployeeStore, type Employee } from '@/stores/employee.ts';
 import { useUserStore } from '@/stores/user.ts';
 import useVuelidate from '@vuelidate/core';
-import {required, numeric, minValue} from '@vuelidate/validators';
+import { required, numeric, minValue, maxValue } from '@vuelidate/validators';
 
 interface EmployeeValidationRules {
   first_name: { required: typeof required };
@@ -106,7 +106,7 @@ interface EmployeeValidationRules {
   birth_date: { required: typeof required };
   username: { required: typeof required };
   role: { required: typeof required };
-  access_level: { required: typeof required; numeric: typeof numeric; minValue: typeof minValue };
+  access_level: { required: typeof required; numeric: typeof numeric; minValue: typeof minValue; maxValue: typeof maxValue };
   manager_id: { required: typeof required };
 }
 
@@ -148,7 +148,7 @@ export default defineComponent({
           birth_date: { required },
           username: { required },
           role: { required },
-          access_level: { required, numeric, minValue: minValue(1) },
+          access_level: { required, numeric, minValue: minValue(1), maxValue: maxValue(5) },
           manager_id: { required },
         };
 
@@ -182,7 +182,6 @@ export default defineComponent({
         }
 
         await employeeStore.updateEmployee(id, updatedData);
-        console.log('Employee updated successfully.');
       } catch (err) {
         console.error('Failed to update employee:', err);
       }
