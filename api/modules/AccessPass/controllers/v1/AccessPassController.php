@@ -112,7 +112,7 @@ class AccessPassController extends ActiveController
     public function actionUpdateFromTask(): Response
     {
         $this->validationHelper->validatePermissionsOrFail(['manageEmployees', 'manageOwnTasks']);
-        $data = Yii::$app->request->post;
+        $data = Yii::$app->request->post();
 
         try {
             $accessPass = $this->accessPassService->updateAccessPassFromTask($data);
@@ -135,7 +135,6 @@ class AccessPassController extends ActiveController
 
     /**
      * @throws ForbiddenHttpException
-     * @throws BadRequestHttpException
      */
     public function actionValidateAccess(): Response
     {
@@ -161,14 +160,15 @@ class AccessPassController extends ActiveController
         }
     }
 
-    protected function findModel($id)
+    /**
+     * @throws NotFoundHttpException
+     */
+    protected function findModel(int $id): ?AccessPass
     {
-        $model = $this->accessPassService->findModel($id);
-
-        if ($model) {
-            return $model;
+        $accessPass = AccessPass::findOne($id);
+        if ($accessPass === null) {
+            throw new NotFoundHttpException('Employee not found.');
         }
-
-        throw new NotFoundHttpException('The requested page does not exist.');
+        return $accessPass;
     }
 }

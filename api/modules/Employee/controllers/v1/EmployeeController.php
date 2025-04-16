@@ -202,7 +202,7 @@ class EmployeeController extends ActiveController
     /**
      * @throws NotFoundHttpException
      */
-    protected function findModel(int $id): Employee
+    protected function findModel(int $id): ?Employee
     {
         $employee = Employee::findOne($id);
         if ($employee === null) {
