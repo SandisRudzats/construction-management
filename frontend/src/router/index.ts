@@ -24,43 +24,6 @@ const routes: RouteRecordRaw[] = [
     component: Dashboard,
     meta: { requiresAuth: true },
   },
-  {
-    path: '/',
-    redirect: '/dashboard',
-  },
-  // Employee Routes
-  // todo:: apskatīties vai man tos routes vispār vajag
-  {
-    path: '/employees/create',
-    name: 'CreateEmployee',
-    component: CreateEmployee,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/employees/edit/:id',
-    name: 'EditEmployee',
-    component: EditEmployee,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/employees/profile/:id',
-    name: 'EmployeeProfile',
-    component: EmployeeProfile,
-    meta: { requiresAuth: true },
-  },
-  // Construction Site Routes
-  {
-    path: '/construction-sites',
-    name: 'ConstructionSites',
-    component: ManageConstructionSites,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/construction-sites/create',
-    name: 'CreateConstructionSite',
-    component: CreateConstructionSite,
-    meta: { requiresAuth: true },
-  },
 ];
 
 const router = createRouter({

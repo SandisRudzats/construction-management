@@ -78,7 +78,7 @@
                 :key="employee.id"
                 :value="employee.id"
               >
-                {{ employee.first_name }} {{ employee.last_name }}
+                {{ employee.first_name }} {{ employee.last_name }} | access level: {{ employee.access_level}}
               </option>
               <option
                 v-if="
