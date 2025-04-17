@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace api\modules\Employee\controllers\v1;
 
-use api\helpers\RbacValidationHelper;
+use api\helpers\UserRequestValidationHelper;
 use api\modules\Employee\interfaces\EmployeeServiceInterface;
 use api\modules\Employee\models\Employee;
 use Throwable;
 use Yii;
 use yii\base\Exception;
+use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
 use yii\rest\ActiveController;
+use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -24,15 +26,37 @@ class EmployeeController extends ActiveController
         $id,
         $module,
         private readonly EmployeeServiceInterface $employeeService,
-        private readonly RbacValidationHelper $validationHelper,
+        private readonly UserRequestValidationHelper $validationHelper,
         $config = []
     ) {
         parent::__construct($id, $module, $config);
     }
 
+    /**
+     * @throws BadRequestHttpException
+     */
+    public function beforeAction($action): bool
+    {
+        $this->validationHelper->ensureJsonRequest();
+        $this->validationHelper->sanitizeRequestData();
+
+        return parent::beforeAction($action);
+    }
+
     public function behaviors(): array
     {
         $behaviors = parent::behaviors();
+        $behaviors['access'] = [
+            'class' => AccessControl::class,
+            'only' => ['view-self', 'create', 'update', 'delete', 'active-employees'],
+            'rules' => [
+                [
+                    'allow' => true,
+                    'roles' => ['@'],
+                ],
+            ],
+        ];
+
         $behaviors['verbs'] = [
             'class' => VerbFilter::class,
             'actions' => [
@@ -66,7 +90,7 @@ class EmployeeController extends ActiveController
     public function actionCreate(): Response
     {
         $this->validationHelper->validatePermissionsOrFail(['manageEmployees']);
-        $data = Yii::$app->request->post();
+        $data = Yii::$app->request->bodyParams;
 
         try {
             $employee = $this->employeeService->createEmployee($data);
@@ -88,14 +112,13 @@ class EmployeeController extends ActiveController
     }
 
     /**
-     * @throws NotFoundHttpException
      * @throws ForbiddenHttpException
      * @throws Exception
      */
     public function actionUpdate(int $id): Response
     {
         $this->validationHelper->validatePermissionsOrFail(['manageEmployees']);
-        $data = Yii::$app->request->post();
+        $data = Yii::$app->request->bodyParams;
 
         try {
             $updatedEmployee = $this->employeeService->updateEmployee($id, $data);
@@ -149,9 +172,8 @@ class EmployeeController extends ActiveController
      */
     public function actionViewSelf(): Response
     {
-        $userId = Yii::$app->user->id;
-
         $this->validationHelper->validatePermissionsOrFail(['viewOwnProfile']);
+        $userId = Yii::$app->user->id;
 
         try {
             $employee = $this->employeeService->getEmployeeById($userId);

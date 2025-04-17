@@ -4,35 +4,46 @@ declare(strict_types=1);
 
 namespace api\modules\WorkTask\controllers\v1;
 
-use api\helpers\RbacValidationHelper;
+use api\helpers\UserRequestValidationHelper;
 use api\modules\WorkTask\interfaces\WorkTaskServiceInterface;
 use api\modules\WorkTask\models\WorkTask;
 use Exception;
 use Throwable;
 use Yii;
-use yii\data\ActiveDataProvider;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
 use yii\rest\ActiveController;
+use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 class WorkTaskController extends ActiveController
 {
+    public $modelClass = WorkTask::class;
+
     public function __construct(
         $id,
         $module,
         private readonly WorkTaskServiceInterface $workTaskService,
-        private readonly RbacValidationHelper $validationHelper,
+        private readonly UserRequestValidationHelper $validationHelper,
         $config = []
     ) {
         parent::__construct($id, $module, $config);
     }
 
-    public $modelClass = WorkTask::class;
+    /**
+     * @throws BadRequestHttpException
+     */
+    public function beforeAction($action): bool
+    {
+        $this->validationHelper->ensureJsonRequest();
+        $this->validationHelper->sanitizeRequestData();
 
-    public function behaviors()
+        return parent::beforeAction($action);
+    }
+
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
 
@@ -76,7 +87,7 @@ class WorkTaskController extends ActiveController
     public function actionCreate(): Response
     {
         $this->validationHelper->validatePermissionsOrFail(['manageOwnTasks', 'manageAllTasks']);
-        $data = Yii::$app->request->post();
+        $data = Yii::$app->request->bodyParams;
 
         try {
             $workTask = $this->workTaskService->createTask($data);
@@ -104,7 +115,7 @@ class WorkTaskController extends ActiveController
     public function actionUpdate($id): Response
     {
         $this->validationHelper->validatePermissionsOrFail(['manageOwnTasks', 'manageAllTasks']);
-        $data = Yii::$app->request->post();
+        $data = Yii::$app->request->bodyParams;
 
         try {
             $updatedEmployee = $this->workTaskService->updateTask($id, $data);

@@ -156,10 +156,10 @@ return [
         'cors' => [
             'class' => Cors::class,
             'cors' => [
-                'Origin' => ['*'],
+                'Origin' => ['http://localhost:5173'],
                 'Access-Control-Request-Method' => ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
                 'Access-Control-Allow-Headers' => ['X-Requested-With', 'Content-Type', 'Authorization'],
-                'Access-Control-Allow-Origin' => ['*'],
+                'Access-Control-Allow-Origin' => ['http://localhost:5173'],
             ],
         ],
     ],

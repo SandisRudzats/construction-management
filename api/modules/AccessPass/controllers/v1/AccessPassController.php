@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace api\modules\AccessPass\controllers\v1;
 
-use api\helpers\RbacValidationHelper;
+use api\helpers\UserRequestValidationHelper;
 use api\modules\AccessPass\models\AccessPass;
 use api\modules\AccessPass\services\AccessPassService;
 use Yii;
@@ -12,6 +12,7 @@ use yii\base\Exception;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
 use yii\rest\ActiveController;
+use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -24,10 +25,21 @@ class AccessPassController extends ActiveController
         $id,
         $module,
         private readonly AccessPassService $accessPassService,
-        private readonly RbacValidationHelper $validationHelper,
+        private readonly UserRequestValidationHelper $validationHelper,
         $config = []
     ) {
         parent::__construct($id, $module, $config);
+    }
+
+    /**
+     * @throws BadRequestHttpException
+     */
+    public function beforeAction($action): bool
+    {
+        $this->validationHelper->ensureJsonRequest();
+        $this->validationHelper->sanitizeRequestData();
+
+        return parent::beforeAction($action);
     }
 
     public function behaviors(): array
@@ -84,7 +96,7 @@ class AccessPassController extends ActiveController
     public function actionCreate(): Response
     {
         $this->validationHelper->validatePermissionsOrFail(['manageEmployees', 'manageOwnTasks']);
-        $data = Yii::$app->request->post();
+        $data = Yii::$app->request->bodyParams;
 
         try {
             $accessPass = $this->accessPassService->createAccessPass($data);
@@ -111,7 +123,7 @@ class AccessPassController extends ActiveController
     public function actionUpdateFromTask(): Response
     {
         $this->validationHelper->validatePermissionsOrFail(['manageEmployees', 'manageOwnTasks']);
-        $data = Yii::$app->request->post();
+        $data = Yii::$app->request->bodyParams;
 
         try {
             $accessPass = $this->accessPassService->updateAccessPassFromTask($data);
@@ -138,7 +150,7 @@ class AccessPassController extends ActiveController
     public function actionValidateAccess(): Response
     {
         $this->validationHelper->validatePermissionsOrFail(['viewAssignedSites']);
-        $data = Yii::$app->request->post();
+        $data = Yii::$app->request->bodyParams;
 
         try {
             $accessPass = $this->accessPassService->validateAccess($data);
