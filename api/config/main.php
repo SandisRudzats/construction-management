@@ -143,6 +143,7 @@ return [
                 'DELETE v1/work-task/<id:\d+>' => 'work-task/work-task/delete',
                 'POST v1/work-task/create' => 'work-task/work-task/create',
                 'POST v1/access-passes/create' => 'access-pass/access-pass/create',
+                'POST v1/access-passes/validate-access' => 'access-pass/access-pass/validate-access',
                 'PUT v1/access-passes/update-from-task' => 'access-pass/access-pass/update-from-task',
             ],
         ],

@@ -30,12 +30,14 @@ class DatabaseSeederController extends Controller
         string $password,
         string $firstName = 'New',
         string $lastName = 'User',
-        int $identifier = 1
+        int $identifier = 1,
+        int $managerId = 1,
     ): void {
         $employee = new Employee();
         $employee->username = $username;
         $employee->first_name = $firstName;
         $employee->last_name = $lastName;
+        $employee->manager_id = $managerId;
 
         $role = self::ROLES_MAPPING[$identifier] ?? null;
 

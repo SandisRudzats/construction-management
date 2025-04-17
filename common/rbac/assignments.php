@@ -162,4 +162,22 @@ return [
     53 => [
         'employee',
     ],
+    58 => [
+        'employee',
+    ],
+    59 => [
+        'employee',
+    ],
+    60 => [
+        'employee',
+    ],
+    61 => [
+        'employee',
+    ],
+    62 => [
+        'employee',
+    ],
+    63 => [
+        'employee',
+    ],
 ];
