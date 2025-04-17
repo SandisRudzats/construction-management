@@ -373,7 +373,7 @@ export default defineComponent({
       if (!result) return
 
       const response = await taskStore.updateTask(task.id, editedTask)
-      console.log(response)
+
       if (response.success) {
         await accessPassStore.updateAccessPassDatesFromTask({
           id: response.data.id,
