@@ -334,7 +334,7 @@ export default defineComponent({
 
       const createdTask = await constructionSiteStore.addTask(newTask)
 
-      if (!(createdTask && createdTask.id)) return
+      if (!createdTask) return
 
       site.showAddTask = false
 
@@ -373,13 +373,14 @@ export default defineComponent({
       if (!result) return
 
       const response = await taskStore.updateTask(task.id, editedTask)
-      if (response) {
+      console.log(response)
+      if (response.success) {
         await accessPassStore.updateAccessPassDatesFromTask({
-          id: response.id,
-          construction_site_id: response.construction_site_id,
-          employee_id: response.employee_id,
-          start_date: response.start_date,
-          end_date: response.end_date,
+          id: response.data.id,
+          construction_site_id: response.data.construction_site_id,
+          employee_id: response.data.employee_id,
+          start_date: response.data.start_date,
+          end_date: response.data.end_date,
         })
 
         editingTaskId.value = null

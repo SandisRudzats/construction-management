@@ -23,12 +23,19 @@ readonly class AccessPassService implements AccessPassServiceInterface
 
     /**
      * @throws Exception | DbException
+     * @throws \DateMalformedStringException
      */
     public function createAccessPass(array $data): ?AccessPass
     {
         $this->validateAllFields($data);
 
         $accessPass = new AccessPass();
+
+        if (isset($accessPass->valid_to)) {
+            // forcing end of the day
+            $accessPass->valid_to = $this->setEndOfDay($accessPass->valid_to);
+        }
+
         $accessPass->load($data, '');
 
         if (!$accessPass->validate()) {
@@ -44,6 +51,7 @@ readonly class AccessPassService implements AccessPassServiceInterface
 
     /**
      * @throws Exception
+     * @throws \DateMalformedStringException
      */
     public function updateAccessPassFromTask(array $data): ?AccessPass
     {
@@ -53,7 +61,8 @@ readonly class AccessPassService implements AccessPassServiceInterface
         $constructionSiteId = (int)$data['construction_site_id'];
         $workTaskId = (int)$data['work_task_id'];
         $validFrom = $data['valid_from'];
-        $validTo = $data['valid_to'];
+        // forcing end of the day
+        $validTo = $this->setEndOfDay($data['valid_to']);
 
         $accessPass = $this->accessPassRepository->findByTaskSiteAndEmployee(
             $employeeId,
@@ -126,5 +135,15 @@ readonly class AccessPassService implements AccessPassServiceInterface
                 'Missing required parameters: employeeId, constructionSiteId, workTaskId, and checkDate are required.'
             );
         }
+    }
+
+    /**
+     * @throws \DateMalformedStringException
+     */
+    private function setEndOfDay(string $date): string
+    {
+        $dt = new DateTime($date);
+        $dt->setTime(23, 59, 59);
+        return $dt->format('Y-m-d H:i:s');
     }
 }

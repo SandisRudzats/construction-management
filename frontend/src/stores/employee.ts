@@ -43,41 +43,31 @@ export const useEmployeeStore = defineStore('employee', {
   }),
 
   getters: {
-    getEmployees: (state) => state.employees || [],
+    getEmployees: (state) => state.employees,
     isLoading: (state) => state.loading,
     getError: (state) => state.error,
 
-    getEmployeesByRole: (state) => {
-      return (role: string) => state.employees.filter((employee) => employee.role === role)
-    },
+    getEmployeesByRole: (state) => (role: string) => state.employees.filter((e) => e.role === role),
 
-    getEmployeesByAccessLevel: (state) => {
-      return (minLevel: number) =>
-        state.employees.filter((employee) => employee.access_level >= minLevel)
-    },
+    getEmployeesByAccessLevel: (state) => (minLevel: number) =>
+      state.employees.filter((e) => e.access_level >= minLevel),
 
-    getEmployeesByManagerId: (state) => {
-      return (managerId: number) =>
-        state.employees.filter((employee) => employee.manager_id === managerId)
-    },
+    getEmployeesByManagerId: (state) => (managerId: number) =>
+      state.employees.filter((e) => e.manager_id === managerId),
 
-    getEmployeeById: (state) => {
-      return (id: number) => state.employees.find((employee) => employee.id === id) || null
-    },
-    getEmployeesByManagerAndAccess: (state) => {
-      return (managerId: number, minAccess: number) =>
-        state.employees.filter((e) => e.manager_id === managerId && e.access_level >= minAccess)
-    },
-    getManagers: (state) => state.employees.filter((employee) => employee.role === 'manager'),
+    getEmployeeById: (state) => (id: number) => state.employees.find((e) => e.id === id) || null,
+
+    getEmployeesByManagerAndAccess: (state) => (managerId: number, minAccess: number) =>
+      state.employees.filter((e) => e.manager_id === managerId && e.access_level >= minAccess),
+
+    getManagers: (state) => state.employees.filter((e) => e.role === 'manager'),
   },
 
   actions: {
     async fetchEmployees() {
       if (this.hasFetched) return
 
-      this.loading = true
-      this.error = null
-      try {
+      await this._withLoading(async () => {
         const response = await api.get<ApiResponse<Employee[]>>('v1/employee/active-employees')
         if (response.data.success) {
           this.employees = response.data.data || []
@@ -86,21 +76,11 @@ export const useEmployeeStore = defineStore('employee', {
           this.error = response.data.message
           this.hasFetched = false
         }
-      } catch (err: Error | unknown) {
-        if (err instanceof Error) {
-          this.error = err.message
-        } else {
-          this.error = 'An unknown error occurred'
-        }
-      } finally {
-        this.loading = false
-      }
+      }, 'An unknown error occurred while fetching employees')
     },
 
     async updateEmployee(id: number, updatedData: Employee) {
-      this.loading = true
-      this.error = null
-      try {
+      await this._withLoading(async () => {
         const response = await api.put(`v1/employee/${id}`, updatedData)
         if (response.data.success) {
           const index = this.employees.findIndex((e) => e.id === id)
@@ -113,22 +93,11 @@ export const useEmployeeStore = defineStore('employee', {
         } else {
           this.error = response.data.message
         }
-      } catch (err: Error | unknown) {
-        if (err instanceof Error) {
-          this.error = err.message
-        } else {
-          this.error = 'An unknown error occurred while updating Employee'
-        }
-      } finally {
-        this.loading = false
-      }
+      }, 'An unknown error occurred while updating Employee')
     },
 
     async createEmployee(newEmployeeData: NewEmployee): Promise<Employee> {
-      this.loading = true
-      this.error = null
-
-      try {
+      return (await this._withLoading(async () => {
         const response = await api.post<ApiResponse<Employee>>(
           'v1/employee/create',
           newEmployeeData,
@@ -142,14 +111,19 @@ export const useEmployeeStore = defineStore('employee', {
           this.hasFetched = false
           throw new Error(this.error || 'Failed to create employee')
         }
+      }, 'An unknown error occurred while creating Employee')) as Employee
+    },
+
+    async _withLoading<T>(
+      callback: () => Promise<T>,
+      fallbackErrorMessage = 'An error occurred',
+    ): Promise<T | void> {
+      this.loading = true
+      this.error = null
+      try {
+        return await callback()
       } catch (err: Error | unknown) {
-        // Handle AxiosError
-        let errorMessage = 'An unknown error occurred while creating Employee'
-        if (err instanceof Error) {
-          errorMessage = err.message
-        }
-        this.error = errorMessage
-        this.hasFetched = false
+        this.error = err instanceof Error ? err.message : fallbackErrorMessage
         throw new Error(this.error)
       } finally {
         this.loading = false

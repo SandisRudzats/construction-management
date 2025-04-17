@@ -62,7 +62,7 @@ class AccessPassController extends ActiveController
                 [
                     'actions' => ['update-from-task'],
                     'allow' => true,
-                    'verbs' => ['POST']
+                    'verbs' => ['PUT']
                 ]
             ],
         ];
@@ -76,7 +76,7 @@ class AccessPassController extends ActiveController
                 'update' => ['PUT', 'PATCH'],
                 'delete' => ['DELETE'],
                 'validate-access' => ['POST'],
-                'update-from-task' => ['POST'],
+                'update-from-task' => ['PUT'],
             ],
         ];
 

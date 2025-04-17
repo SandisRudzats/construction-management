@@ -112,7 +112,7 @@ class WorkTaskController extends ActiveController
      * @param $id
      * @throws ForbiddenHttpException
      */
-    public function actionUpdate($id): Response
+    public function actionUpdate(int $id): Response
     {
         $this->validationHelper->validatePermissionsOrFail(['manageOwnTasks', 'manageAllTasks']);
         $data = Yii::$app->request->bodyParams;
