@@ -50,22 +50,17 @@ return [
     'bootstrap' => ['log'],
     'container' => [
         'singletons' => [
-            // Authentication Services
             AuthServiceInterface::class => AuthService::class,
 
-            // Employee Services and Repositories
             EmployeeServiceInterface::class => EmployeeService::class,
             EmployeeRepositoryInterface::class => EmployeeRepository::class,
 
-            // Construction Site Services and Repositories
             ConstructionSiteServiceInterface::class => ConstructionSiteService::class,
             ConstructionSiteRepositoryInterface::class => ConstructionSiteRepository::class,
 
-            // Work Task Services and Repositories
             WorkTaskServiceInterface::class => WorkTaskService::class,
             WorkTaskRepositoryInterface::class => WorkTaskRepository::class,
 
-            // Access Pass Services and Repositories
             AccessPassServiceInterface::class => AccessPassService::class,
             AccessPassRepositoryInterface::class => AccessPassRepository::class,
         ],
@@ -113,7 +108,7 @@ return [
                 [
                     'class' => FileTarget::class,
                     'levels' => ['trace', 'error', 'warning'],
-                    'categories' => ['yii\web\UrlManager::parseRequest'], // Log URL manager routing
+                    'categories' => ['yii\web\UrlManager::parseRequest'],
                 ],
             ],
         ],

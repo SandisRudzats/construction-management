@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace api\modules\AccessPass\interfaces;
 
 use api\modules\AccessPass\models\AccessPass;
-use DateTime;
 use yii\db\ActiveRecord;
 
 interface AccessPassRepositoryInterface

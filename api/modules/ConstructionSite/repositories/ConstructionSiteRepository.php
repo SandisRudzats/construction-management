@@ -12,14 +12,14 @@ use yii\db\StaleObjectException;
 
 class ConstructionSiteRepository implements ConstructionSiteRepositoryInterface
 {
-    public function find(int $id): ?ConstructionSite
-    {
-        return ConstructionSite::findOne($id);
-    }
-
     public function findAll(): array
     {
         return ConstructionSite::find()->all();
+    }
+
+    public function find(int $id): ?ConstructionSite
+    {
+        return ConstructionSite::findOne($id);
     }
 
     /**

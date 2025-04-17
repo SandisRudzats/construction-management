@@ -12,14 +12,14 @@ use yii\db\StaleObjectException;
 
 class WorkTaskRepository implements WorkTaskRepositoryInterface
 {
-    public function find(int $id): ?WorkTask
-    {
-        return WorkTask::findOne($id);
-    }
-
     public function findAll(): array
     {
         return WorkTask::find()->all();
+    }
+
+    public function find(int $id): ?WorkTask
+    {
+        return WorkTask::findOne($id);
     }
 
     /**

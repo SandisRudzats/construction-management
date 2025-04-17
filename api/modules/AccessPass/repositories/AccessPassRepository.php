@@ -6,7 +6,6 @@ namespace api\modules\AccessPass\repositories;
 
 use api\modules\AccessPass\interfaces\AccessPassRepositoryInterface;
 use api\modules\AccessPass\models\AccessPass;
-use DateTime;
 use yii\db\ActiveRecord;
 use yii\db\Exception;
 

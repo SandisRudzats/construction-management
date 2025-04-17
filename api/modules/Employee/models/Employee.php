@@ -47,6 +47,21 @@ class Employee extends ActiveRecord implements IdentityInterface
         return self::TABLE_NAME;
     }
 
+    public static function findIdentity($id): ?IdentityInterface
+    {
+        return static::findOne($id);
+    }
+
+    public static function findIdentityByAccessToken($token, $type = null): ?IdentityInterface
+    {
+        return null;
+    }
+
+    public static function findByUsername(string $username): ?self
+    {
+        return static::findOne(['username' => $username]);
+    }
+
     public function rules(): array
     {
         return [
@@ -80,24 +95,9 @@ class Employee extends ActiveRecord implements IdentityInterface
         ];
     }
 
-    public static function findIdentity($id): ?IdentityInterface
-    {
-        return static::findOne($id);
-    }
-
-    public static function findIdentityByAccessToken($token, $type = null): ?IdentityInterface
-    {
-        return null;
-    }
-
     public function getId(): int|string
     {
         return $this->id;
-    }
-
-    public function getAuthKey(): string
-    {
-        return '';
     }
 
     public function validateAuthKey($authKey): bool
@@ -105,9 +105,9 @@ class Employee extends ActiveRecord implements IdentityInterface
         return $this->getAuthKey() === $authKey;
     }
 
-    public static function findByUsername(string $username): ?self
+    public function getAuthKey(): string
     {
-        return static::findOne(['username' => $username]);
+        return '';
     }
 
     /**

@@ -27,7 +27,6 @@ readonly class AccessPassService implements AccessPassServiceInterface
      */
     public function createAccessPass(array $data): ?AccessPass
     {
-
         $this->validateAllFields($data);
 
         $accessPass = new AccessPass();

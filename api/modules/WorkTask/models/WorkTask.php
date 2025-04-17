@@ -26,6 +26,7 @@ class WorkTask extends ActiveRecord
 {
     public const TABLE_NAME = 'work_tasks';
     public const REQUIRED_FIELDS = ['employee_id', 'construction_site_id', 'start_date', 'end_date', 'description'];
+
     public static function tableName(): string
     {
         return self::TABLE_NAME;
@@ -51,7 +52,7 @@ class WorkTask extends ActiveRecord
                 'targetClass' => ConstructionSite::class,
                 'targetAttribute' => ['construction_site_id' => 'id']
             ],
-            [['description'], 'string' , 'max' => 255],
+            [['description'], 'string', 'max' => 255],
         ];
     }
 
