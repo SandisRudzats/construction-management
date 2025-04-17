@@ -1,60 +1,53 @@
-<p align="center">
-    <a href="https://github.com/yiisoft" target="_blank">
-        <img src="https://avatars0.githubusercontent.com/u/993323" height="100px">
-    </a>
-    <h1 align="center">Yii 2 Advanced Project Template</h1>
-    <br>
-</p>
+Sveiki 
 
-Yii 2 Advanced Project Template is a skeleton [Yii 2](https://www.yiiframework.com/) application best for
-developing complex Web applications with multiple tiers.
+Vēlējos uzrakstīt īsu konspektu te par to kāmdēļ šis viss gāja tik ilgi un sāpīgi..
+Oriģināli sākot strādāt Printfulā tika piešķirts macbook, ko tad arī tagad lietoju
+arī pēc darba attiecību beigšanas, un te parādījās pirmās lielās problēmas , tieši 
+sakarā ar MSsql datu bāzes savienojamību utt.
 
-The template includes three tiers: front end, back end, and console, each of which
-is a separate Yii application.
+Ja oriģināli doma bija visu 'dockerizēt'(ar ļoti limitētām zināšanām, jo PF to darīja devops departaments) 
+, proti FE un BE un DB katrs savā konteinerā,
+tad , pārsteigums - vai nē - uz Mac OS tas nebūt nav tik viegli(vismaz tā man liekās).
 
-The template is designed to work in a team development environment. It supports
-deploying the application in different environments.
+Scenārijs 1. FE un BE katrs savā konteinerā , bet nevar piejūgt klāt Mssql(šo scenāriju neturpināju, bet lieki 
+pazaudēju laiku un nervus)
 
-Documentation is at [docs/guide/README.md](docs/guide/README.md).
+Scenārijs 2. - FE un BE visprimitīvākajā formā ar npm install, run dev etc. un Mssql bāzēts uz random custom image, ko 
+tad vismaz izdevās piedzīvināt ar docker run -d --name construction-management -p 1433:1433 -e ACCEPT_EULA=Y -e SA_PASSWORD=spudoverlord ngindrek/mssql:arm64
 
-[![Latest Stable Version](https://img.shields.io/packagist/v/yiisoft/yii2-app-advanced.svg)](https://packagist.org/packages/yiisoft/yii2-app-advanced)
-[![Total Downloads](https://img.shields.io/packagist/dt/yiisoft/yii2-app-advanced.svg)](https://packagist.org/packages/yiisoft/yii2-app-advanced)
-[![build](https://github.com/yiisoft/yii2-app-advanced/workflows/build/badge.svg)](https://github.com/yiisoft/yii2-app-advanced/actions?query=workflow%3Abuild)
+tad kad development ir galā(ja to tā var nosaukt) vēlējos uztaisīt sql dumpu, bet secinājums, ka tādas built in funkcionalitātes
+, kas strādā ar mac OS īsti nav(pārbaudīju kādas 4 applikācijas, bet labākais ko varēja dabūt laukā bija bacpac fails 
+caur Azure data studio , un tas pats, iespējams, izskatās ka ir corrupted.
 
-DIRECTORY STRUCTURE
--------------------
+Šo visu rakstu, jo galīgi neesmu priecīgs, par to ko esmu te iesniedzis, bet norunāts, bija - tad jāiesniedz.
+Honest mistake - vajadzēja pirmajā dienā mest mieru mac OS - mssql compatability versijai un taisīt visu
+uz windows, bet nu jau ir par vēlu.
 
-```
-common
-    config/              contains shared configurations
-    mail/                contains view files for e-mails
-    models/              contains model classes used in both backend and frontend
-    tests/               contains tests for common classes    
-console
-    config/              contains console configurations
-    controllers/         contains console controllers (commands)
-    migrations/          contains database migrations
-    models/              contains console-specific model classes
-    runtime/             contains files generated during runtime
-backend
-    assets/              contains application assets such as JavaScript and CSS
-    config/              contains backend configurations
-    controllers/         contains Web controller classes
-    models/              contains backend-specific model classes
-    runtime/             contains files generated during runtime
-    tests/               contains tests for backend application    
-    views/               contains view files for the Web application
-    web/                 contains the entry script and Web resources
-frontend
-    assets/              contains application assets such as JavaScript and CSS
-    config/              contains frontend configurations
-    controllers/         contains Web controller classes
-    models/              contains frontend-specific model classes
-    runtime/             contains files generated during runtime
-    tests/               contains tests for frontend application
-    views/               contains view files for the Web application
-    web/                 contains the entry script and Web resources
-    widgets/             contains frontend widgets
-vendor/                  contains dependent 3rd-party packages
-environments/            contains environment-based overrides
-```
+JA gadijumā mans repo vispār tiec caurskatīts, pēc šāda , diezgan drausmīga intro un raudu vēstules,
+es varu mēģināt uzcept seederus, kas tad ļautu populēt mssql DB - ko , diemžēl būtu jāprasa jums 
+uztaisīt savā galā .... jo sql dumpu tā arī neizdevās iegūt...
+
+JEBkurā gadijumā šeit ir mazs overview , kas te īsti notiek:
+
+/construction-management/api - viss backends - sadalīts pa moduļiem, ar 'api' endpointiem, ko triggero frontends.
+/construction-management/frontend - vue + vite + typescript - ļoti maz strādāts ar FE, bet nu ko varēju to uzcepu
+/console/controllers - seederis lai dabūtu iekšā sākotnējo useri - php yii database-seeder/create-user  test password new user 3 \console\controllers\DatabaseSeederController::actionCreateUser
+    ar ko tad var viegli sataisīt visus pārējos access pointus(caurlaižu api))
+    darbiniekus
+    būvlaukumus
+    veicamos darbus
+
+lai palaistu lokāli : 
+backends - php -S localhost:4000 -t api/web
+frontends - npm run dev
+
+tākā man diemžēl nav sql dumps pieejams - tad db tabulas etc vajag palaist ar
+php yii migrate
+
+ja ir problēmas ar Rbac roles - php yii rbac/init
+
+
+
+skumji, bet nu , kā ir - tā ir 
+
+jaukas brīvdienas
