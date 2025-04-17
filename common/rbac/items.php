@@ -33,10 +33,6 @@ return [
         'type' => 2,
         'description' => 'Employee can view their own tasks',
     ],
-    'manageOwnSites' => [ // Added permission
-        'type' => 2,
-        'description' => 'Manager can manage construction sites that they manage',
-    ],
     'employee' => [
         'type' => 1,
         'children' => [
@@ -51,7 +47,6 @@ return [
             'employee',
             'viewTeam',
             'manageOwnTasks',
-            'manageOwnSites',
         ],
     ],
     'admin' => [
