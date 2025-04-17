@@ -23,7 +23,7 @@ caur Azure data studio , un tas pats, iespējams, izskatās ka ir corrupted.
 Honest mistake - vajadzēja pirmajā dienā mest mieru mac OS - mssql compatability versijai un taisīt visu
 uz windows, bet nu jau ir par vēlu.
 
-JA gadijumā mans repo vispār tiec caurskatīts, pēc šāda , diezgan drausmīga intro un raudu vēstules,
+JA gadijumā mans repo vispār tiek caurskatīts, pēc šāda , diezgan drausmīga intro un raudu vēstules,
 es varu mēģināt uzcept seederus, kas tad ļautu populēt mssql DB - ko , diemžēl būtu jāprasa jums 
 uztaisīt savā galā .... jo sql dumpu tā arī neizdevās iegūt...
 
