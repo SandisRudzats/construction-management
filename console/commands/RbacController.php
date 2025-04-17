@@ -21,7 +21,6 @@ class RbacController extends Controller
         $auth = Yii::$app->authManager;
         $auth->removeAll();
 
-        // Permissions
         $manageEmployees = $auth->createPermission('manageEmployees');
         $manageEmployees->description = 'Create, update, deactivate employees';
         $auth->add($manageEmployees);
@@ -74,6 +73,6 @@ class RbacController extends Controller
         $auth->addChild($admin, $manageSites);
         $auth->addChild($admin, $manageAllTasks);
 
-        echo "RBAC roles and permissions initialized.\n";
+        echo "RBAC roles and permissions initialized.";
     }
 }

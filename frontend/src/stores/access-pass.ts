@@ -42,7 +42,7 @@ export const useAccessPassStore = defineStore('accessPass', {
       this.error = null
 
       try {
-        const response = await api.post('v1/access-pass/validate-access', {
+        const response = await api.post('v1/access-passes/validate-access', {
           employeeId,
           constructionSiteId,
           workTaskId,

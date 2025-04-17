@@ -27,13 +27,14 @@ readonly class AccessPassService implements AccessPassServiceInterface
      */
     public function createAccessPass(array $data): ?AccessPass
     {
+
         $this->validateAllFields($data);
 
         $accessPass = new AccessPass();
 
-        if (isset($accessPass->valid_to)) {
+        if (isset($data['valid_to'])) {
             // forcing end of the day
-            $accessPass->valid_to = $this->setEndOfDay($accessPass->valid_to);
+            $data['valid_to'] = $this->setEndOfDay($data['valid_to']);
         }
 
         $accessPass->load($data, '');

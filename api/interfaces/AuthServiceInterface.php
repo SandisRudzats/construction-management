@@ -8,7 +8,7 @@ use api\models\LoginForm;
 
 interface AuthServiceInterface
 {
-    public function login(LoginForm $model): bool;
+    public function login(LoginForm $model): array;
 
     public function logout(): void;
 }
